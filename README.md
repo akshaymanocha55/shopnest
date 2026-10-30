@@ -202,7 +202,7 @@ npm test
 
 1. Push this repo to GitHub.
 2. In Vercel, choose **Add New → Project** and import the repo (the framework is detected automatically).
-3. Add the four environment variables from `.env.example`. Set `NEXT_PUBLIC_SITE_URL` to your Vercel URL, e.g. `https://shopnest.vercel.app`.
+3. Add the five environment variables from `.env.example`. Set `NEXT_PUBLIC_SITE_URL` to your Vercel URL, e.g. `https://shopnest.vercel.app`.
 4. Deploy. Every push to `main` redeploys automatically.
 
 ## What I'd do with more time
