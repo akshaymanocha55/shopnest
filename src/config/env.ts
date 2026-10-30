@@ -11,6 +11,10 @@ function required(name: string, value: string | undefined): string {
 
 export const env = {
   apiBaseUrl: required('NEXT_PUBLIC_API_BASE_URL', process.env.NEXT_PUBLIC_API_BASE_URL),
+  locationApiBaseUrl: required(
+    'NEXT_PUBLIC_LOCATION_API_BASE_URL',
+    process.env.NEXT_PUBLIC_LOCATION_API_BASE_URL,
+  ),
   siteUrl: required('NEXT_PUBLIC_SITE_URL', process.env.NEXT_PUBLIC_SITE_URL).replace(/\/$/, ''),
   encryptionKey: required('NEXT_PUBLIC_ENCRYPTION_KEY', process.env.NEXT_PUBLIC_ENCRYPTION_KEY),
   tokenSecret: required('NEXT_PUBLIC_TOKEN_SECRET', process.env.NEXT_PUBLIC_TOKEN_SECRET),

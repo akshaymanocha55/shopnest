@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, Package, UserRound } from 'lucide-react';
+import { Heart, LogOut, MapPinned, Package, UserRound } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
@@ -8,16 +8,24 @@ import { ROUTES, TOAST } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectUser } from '@/store/slices/auth.slice';
+import { selectAddressCount } from '@/store/slices/addresses.slice';
 import { selectOrderCount } from '@/store/slices/orders.slice';
+import { selectWishlistCount } from '@/store/slices/wishlist.slice';
 import { endUserSession } from '@/store/thunks';
 import { Button } from '../ui/Button';
+import { AddressBook } from './AddressBook';
 import { OrderHistory } from './OrderHistory';
 import { ProfileCard } from './ProfileCard';
+import { WishlistTab } from './WishlistTab';
 
 const TABS = [
   { id: 'profile', label: 'Profile', icon: UserRound },
   { id: 'orders', label: 'Orders', icon: Package },
+  { id: 'wishlist', label: 'Wishlist', icon: Heart },
+  { id: 'addresses', label: 'Addresses', icon: MapPinned },
 ] as const;
+
+const TAB_IDS = new Set<string>(TABS.map((t) => t.id));
 
 type TabId = (typeof TABS)[number]['id'];
 
@@ -27,7 +35,15 @@ export function AccountView() {
   const searchParams = useSearchParams();
   const user = useAppSelector(selectUser);
   const orderCount = useAppSelector(selectOrderCount);
-  const tab: TabId = searchParams.get('tab') === 'orders' ? 'orders' : 'profile';
+  const wishlistCount = useAppSelector(selectWishlistCount);
+  const addressCount = useAppSelector(selectAddressCount);
+  const requested = searchParams.get('tab') ?? '';
+  const tab: TabId = TAB_IDS.has(requested) ? (requested as TabId) : 'profile';
+  const counts: Partial<Record<TabId, number>> = {
+    orders: orderCount,
+    wishlist: wishlistCount,
+    addresses: addressCount,
+  };
 
   const selectTab = useCallback(
     (id: TabId) =>
@@ -47,7 +63,10 @@ export function AccountView() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
-      <nav aria-label="Account sections" className="flex gap-2 lg:flex-col">
+      <nav
+        aria-label="Account sections"
+        className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:flex-col lg:px-0"
+      >
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -55,7 +74,7 @@ export function AccountView() {
             onClick={() => selectTab(id)}
             aria-current={tab === id ? 'page' : undefined}
             className={cn(
-              'flex h-12 flex-1 items-center gap-3 rounded-2xl px-4 text-left font-semibold transition lg:flex-none',
+              'flex h-12 shrink-0 items-center gap-3 rounded-2xl px-4 text-left font-semibold whitespace-nowrap transition lg:shrink',
               tab === id
                 ? 'bg-ink-800 text-white'
                 : 'bg-white text-ink-600 ring-1 ring-mist hover:text-ink-900',
@@ -63,14 +82,14 @@ export function AccountView() {
           >
             <Icon className="size-4.5" />
             {label}
-            {id === 'orders' && orderCount > 0 && (
+            {(counts[id] ?? 0) > 0 && (
               <span
                 className={cn(
                   'ml-auto rounded-full px-2 text-xs',
                   tab === id ? 'bg-white/20' : 'bg-ink-50',
                 )}
               >
-                {orderCount}
+                {counts[id]}
               </span>
             )}
           </button>
@@ -85,7 +104,10 @@ export function AccountView() {
       </nav>
 
       <div key={tab} className="animate-fade-in">
-        {tab === 'profile' ? <ProfileCard user={user} /> : <OrderHistory />}
+        {tab === 'profile' && <ProfileCard user={user} />}
+        {tab === 'orders' && <OrderHistory />}
+        {tab === 'wishlist' && <WishlistTab />}
+        {tab === 'addresses' && <AddressBook />}
         <Button
           variant="secondary"
           onClick={logout}

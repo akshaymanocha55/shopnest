@@ -1,5 +1,12 @@
 import { PRICING } from '@/constants';
-import { buildLineId, calculateSummary, getUnitPrice, getVariantLabel } from '@/lib/pricing';
+import {
+  buildLineId,
+  calculateSummary,
+  discountPercent,
+  getUnitPrice,
+  getVariantLabel,
+  validateCoupon,
+} from '@/lib/pricing';
 import type { CartItem } from '@/types/cart';
 import { ssd } from '@/test-utils/fixtures';
 
@@ -56,8 +63,53 @@ describe('pricing', () => {
       subtotal: 0,
       mrpTotal: 0,
       discount: 0,
+      couponCode: null,
+      couponDiscount: 0,
       deliveryFee: 0,
       total: 0,
     });
+  });
+
+  it('calculates the discount percentage', () => {
+    expect(discountPercent(750, 1000)).toBe(25);
+    expect(discountPercent(1000, 1000)).toBe(0);
+  });
+});
+
+describe('coupons', () => {
+  it('rejects unknown codes and orders below the minimum', () => {
+    expect(validateCoupon('NOPE', 5000)).toEqual({
+      valid: false,
+      reason: 'This coupon code is not valid',
+    });
+    const check = validateCoupon('FLAT200', 1000);
+    expect(check.valid).toBe(false);
+    expect(!check.valid && check.reason).toMatch(/Add ₹499 more/);
+  });
+
+  it('is case-insensitive', () => {
+    expect(validateCoupon('welcome10', 1000).valid).toBe(true);
+  });
+
+  it('applies a capped percentage discount', () => {
+    const summary = calculateSummary([item({ unitPrice: 20000, unitMrp: 25000 })], 'WELCOME10');
+    expect(summary.couponDiscount).toBe(1000); // 10% would be 2000, capped at 1000
+    expect(summary.total).toBe(19000);
+  });
+
+  it('applies a flat discount', () => {
+    const summary = calculateSummary([item({ unitPrice: 2000, unitMrp: 2500 })], 'FLAT200');
+    expect(summary).toMatchObject({ couponCode: 'FLAT200', couponDiscount: 200, total: 1800 });
+  });
+
+  it('makes delivery free with FREESHIP', () => {
+    const summary = calculateSummary([item({ unitPrice: 300, unitMrp: 400 })], 'FREESHIP');
+    expect(summary.deliveryFee).toBe(0);
+    expect(summary.total).toBe(300);
+  });
+
+  it('ignores a coupon the cart no longer qualifies for', () => {
+    const summary = calculateSummary([item({ unitPrice: 500, unitMrp: 700 })], 'FLAT200');
+    expect(summary).toMatchObject({ couponCode: null, couponDiscount: 0 });
   });
 });

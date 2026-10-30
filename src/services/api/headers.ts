@@ -13,19 +13,24 @@ export interface HeaderOptions {
   hasBody?: boolean;
   /** Extra per-request headers, merged last. */
   extra?: HeadersInit;
+  /**
+   * Third-party APIs only get standard headers: a custom header would trigger a CORS
+   * preflight that those servers may not allow.
+   */
+  thirdParty?: boolean;
 }
 
-const DEFAULT_HEADERS: Record<string, string> = {
-  Accept: 'application/json',
-  'X-Client-App': `${APP.name.toLowerCase()}-web`,
-};
+const DEFAULT_HEADERS: Record<string, string> = { Accept: 'application/json' };
+const CLIENT_HEADER = ['X-Client-App', `${APP.name.toLowerCase()}-web`] as const;
 
 export async function buildHeaders({
   auth = true,
   hasBody = false,
   extra,
+  thirdParty = false,
 }: HeaderOptions = {}): Promise<Headers> {
   const headers = new Headers(DEFAULT_HEADERS);
+  if (!thirdParty) headers.set(...CLIENT_HEADER);
 
   if (hasBody) headers.set('Content-Type', 'application/json');
 

@@ -2,7 +2,7 @@ import { API_ENDPOINTS, PRICING } from '@/constants';
 import { calculateSummary } from '@/lib/pricing';
 import { generateId } from '@/lib/utils';
 import type { CartItem } from '@/types/cart';
-import type { Order, PaymentMethod, ShippingAddress } from '@/types/order';
+import type { AddressFields, Order, PaymentMethod } from '@/types/order';
 import { apiClient } from './api/client';
 
 interface FakeStoreCart {
@@ -12,13 +12,16 @@ interface FakeStoreCart {
 export interface PlaceOrderInput {
   userId: string;
   items: CartItem[];
-  address: ShippingAddress;
+  shippingAddress: AddressFields;
+  billingAddress: AddressFields;
+  couponCode: string | null;
   paymentMethod: PaymentMethod;
 }
 
 export const orderService = {
   /** POST /carts on FakeStore, then build the order locally (FakeStore does not persist it). */
-  async placeOrder({ userId, items, address, paymentMethod }: PlaceOrderInput): Promise<Order> {
+  async placeOrder(input: PlaceOrderInput): Promise<Order> {
+    const { userId, items, shippingAddress, billingAddress, couponCode, paymentMethod } = input;
     let remoteId: number | undefined;
     try {
       const cart = await apiClient.post<FakeStoreCart>(API_ENDPOINTS.carts, {
@@ -34,14 +37,20 @@ export const orderService = {
 
     const placedAt = new Date();
     const estimatedDelivery = new Date(placedAt);
-    estimatedDelivery.setDate(placedAt.getDate() + PRICING.deliveryDays);
+    const days =
+      shippingAddress.country === 'India'
+        ? PRICING.deliveryDays
+        : PRICING.internationalDeliveryDays;
+    estimatedDelivery.setDate(placedAt.getDate() + days);
 
     return {
       id: generateId(`SN${remoteId ?? ''}`).slice(0, 12),
       userId,
       items,
-      summary: calculateSummary(items),
-      address,
+      summary: calculateSummary(items, couponCode),
+      shippingAddress,
+      billingAddress,
+      couponCode,
       paymentMethod,
       status: 'confirmed',
       placedAt: placedAt.toISOString(),

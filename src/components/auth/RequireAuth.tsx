@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import { REDIRECT_PARAM, ROUTES } from '@/constants';
+import { useHydrated } from '@/hooks/useHydrated';
 import { useAppSelector } from '@/store/hooks';
 import { selectAuthStatus } from '@/store/slices/auth.slice';
 
@@ -11,6 +12,7 @@ import { selectAuthStatus } from '@/store/slices/auth.slice';
  * this covers the client side (e.g. the session expiring while the page is open).
  */
 export function RequireAuth({ children, fallback }: { children: ReactNode; fallback: ReactNode }) {
+  const hydrated = useHydrated();
   const status = useAppSelector(selectAuthStatus);
   const router = useRouter();
   const pathname = usePathname();
@@ -21,5 +23,5 @@ export function RequireAuth({ children, fallback }: { children: ReactNode; fallb
     }
   }, [status, router, pathname]);
 
-  return status === 'authenticated' ? children : fallback;
+  return hydrated && status === 'authenticated' ? children : fallback;
 }

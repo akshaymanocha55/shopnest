@@ -4,22 +4,25 @@ import { useMutation } from '@tanstack/react-query';
 import { Pencil, ShoppingBag } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { PAYMENT_METHODS, ROUTES, TOAST } from '@/constants';
 import { getErrorMessage } from '@/lib/errors';
-import { formatPrice } from '@/lib/format';
+import { formatAddress, formatPrice } from '@/lib/format';
+import { discountPercent } from '@/lib/pricing';
 import { orderService } from '@/services/order.service';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { selectAddressById } from '@/store/slices/addresses.slice';
 import { selectUser } from '@/store/slices/auth.slice';
 import { clearCart, selectCartItems, selectCartSummary } from '@/store/slices/cart.slice';
 import { addOrder } from '@/store/slices/orders.slice';
-import type { PaymentMethod, ShippingAddress } from '@/types/order';
+import type { PaymentMethod } from '@/types/order';
+import { CouponBox } from '../cart/CouponBox';
 import { OrderSummary } from '../cart/OrderSummary';
 import { Button } from '../ui/Button';
 import { ButtonLink } from '../ui/ButtonLink';
 import { EmptyState } from '../ui/EmptyState';
-import { AddressForm } from './AddressForm';
+import { AddressStep, type AddressSelection } from './AddressStep';
 import { CheckoutSteps } from './CheckoutSteps';
 import { PaymentOptions } from './PaymentOptions';
 
@@ -32,7 +35,7 @@ function StepCard({
 }: {
   title: string;
   onEdit?: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="animate-fade-in rounded-[var(--radius-card)] bg-white p-6 ring-1 ring-mist">
@@ -61,8 +64,15 @@ export function CheckoutView() {
   const summary = useAppSelector(selectCartSummary);
 
   const [step, setStep] = useState<Step>(0);
-  const [address, setAddress] = useState<ShippingAddress | null>(null);
+  const [selection, setSelection] = useState<AddressSelection | null>(null);
   const [payment, setPayment] = useState<PaymentMethod>('upi');
+
+  const shipping = useAppSelector((state) =>
+    selection ? selectAddressById(state, selection.shippingId) : undefined,
+  );
+  const billing = useAppSelector((state) =>
+    selection ? selectAddressById(state, selection.billingId) : undefined,
+  );
 
   const placeOrder = useMutation({
     mutationFn: orderService.placeOrder,
@@ -76,8 +86,8 @@ export function CheckoutView() {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
-  const onAddress = useCallback((value: ShippingAddress) => {
-    setAddress(value);
+  const onAddresses = useCallback((value: AddressSelection) => {
+    setSelection(value);
     setStep(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
@@ -95,25 +105,47 @@ export function CheckoutView() {
 
   const paymentLabel = PAYMENT_METHODS.find((m) => m.id === payment)?.label;
 
+  const submitOrder = () => {
+    if (!user || !shipping || !billing) return;
+    placeOrder.mutate({
+      userId: user.id,
+      items,
+      shippingAddress: shipping,
+      billingAddress: billing,
+      couponCode: summary.couponCode,
+      paymentMethod: payment,
+    });
+  };
+
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
       <div className="space-y-5">
         <CheckoutSteps current={step} />
 
         {step === 0 ? (
-          <StepCard title="Delivery address">
-            <AddressForm
-              defaultValues={address ?? { fullName: user?.name, mobile: user?.mobile }}
-              onSubmit={onAddress}
-            />
+          <StepCard title="Addresses">
+            <AddressStep initial={selection} onContinue={onAddresses} />
           </StepCard>
         ) : (
-          <StepCard title="Delivery address" onEdit={() => setStep(0)}>
-            <p className="font-semibold text-ink-900">{address?.fullName}</p>
-            <p className="text-ink-600">
-              {address?.addressLine}, {address?.city}, {address?.state} {address?.pincode}
-            </p>
-            <p className="text-ink-500">+91 {address?.mobile}</p>
+          <StepCard title="Addresses" onEdit={() => setStep(0)}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-sm font-medium text-ink-400">Shipping to</p>
+                <p className="mt-1 font-semibold text-ink-900">{shipping?.fullName}</p>
+                <p className="text-sm text-ink-600">{shipping && formatAddress(shipping)}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-ink-400">Billing address</p>
+                {selection?.billingSameAsShipping ? (
+                  <p className="mt-1 text-sm text-ink-600">Same as shipping address</p>
+                ) : (
+                  <>
+                    <p className="mt-1 font-semibold text-ink-900">{billing?.fullName}</p>
+                    <p className="text-sm text-ink-600">{billing && formatAddress(billing)}</p>
+                  </>
+                )}
+              </div>
+            </div>
           </StepCard>
         )}
 
@@ -133,36 +165,45 @@ export function CheckoutView() {
             </StepCard>
             <StepCard title={`Items (${summary.itemCount})`}>
               <ul className="divide-y divide-mist">
-                {items.map((item) => (
-                  <li key={item.lineId} className="flex items-center gap-4 py-3">
-                    <span className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-paper">
-                      <Image
-                        src={item.image}
-                        alt=""
-                        fill
-                        sizes="64px"
-                        className="object-contain p-2 mix-blend-multiply"
-                      />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="line-clamp-1 font-medium text-ink-800">{item.title}</span>
-                      <span className="text-sm text-ink-500">
-                        Qty {item.quantity}
-                        {item.variantLabel && `, ${item.variantLabel}`}
+                {items.map((item) => {
+                  const off = discountPercent(item.unitPrice, item.unitMrp);
+                  return (
+                    <li key={item.lineId} className="flex items-center gap-4 py-3">
+                      <span className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-paper">
+                        <Image
+                          src={item.image}
+                          alt=""
+                          fill
+                          sizes="64px"
+                          className="object-contain p-2 mix-blend-multiply"
+                        />
                       </span>
-                    </span>
-                    <span className="font-semibold tabular-nums">
-                      {formatPrice(item.unitPrice * item.quantity)}
-                    </span>
-                  </li>
-                ))}
+                      <span className="min-w-0 flex-1">
+                        <span className="line-clamp-1 font-medium text-ink-800">{item.title}</span>
+                        <span className="text-sm text-ink-500">
+                          Qty {item.quantity}
+                          {item.variantLabel && `, ${item.variantLabel}`}
+                        </span>
+                      </span>
+                      <span className="text-right">
+                        <span className="block leading-6 font-semibold tabular-nums">
+                          {formatPrice(item.unitPrice * item.quantity)}
+                        </span>
+                        {off > 0 && (
+                          <span className="text-xs font-semibold text-leaf-600">{off}% off</span>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </StepCard>
           </>
         )}
       </div>
 
-      <aside className="lg:sticky lg:top-36 lg:self-start">
+      <aside className="space-y-5 lg:sticky lg:top-36 lg:self-start">
+        <CouponBox />
         <OrderSummary summary={summary}>
           {step === 2 ? (
             <Button
@@ -171,11 +212,7 @@ export function CheckoutView() {
               fullWidth
               loading={placeOrder.isPending}
               disabled={placeOrder.isSuccess}
-              onClick={() =>
-                user &&
-                address &&
-                placeOrder.mutate({ userId: user.id, items, address, paymentMethod: payment })
-              }
+              onClick={submitOrder}
             >
               Place order, {formatPrice(summary.total)}
             </Button>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { env } from '@/config/env';
 import { APP, ROUTES } from '@/constants';
 import type { Product } from '@/types/product';
+import { getSeedReviews } from './reviews';
 
 export const absoluteUrl = (path = '/') =>
   `${env.siteUrl}${path.startsWith('/') ? path : `/${path}`}`;
@@ -100,6 +101,14 @@ export function productJsonLd(product: Product) {
       bestRating: 5,
       worstRating: 1,
     },
+    review: getSeedReviews(product, 3).map((r) => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: r.author },
+      datePublished: r.date,
+      name: r.title,
+      reviewBody: r.body,
+      reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+    })),
     offers: {
       '@type': 'Offer',
       url,

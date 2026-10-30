@@ -8,6 +8,13 @@ export const API_ENDPOINTS = {
   cart: (id: number | string) => `/carts/${id}`,
 } as const;
 
+/** countriesnow.space endpoints (relative to NEXT_PUBLIC_LOCATION_API_BASE_URL). */
+export const LOCATION_ENDPOINTS = {
+  countries: '/countries/iso',
+  states: '/countries/states',
+  cities: '/countries/cities',
+} as const;
+
 export const HTTP_STATUS = {
   unauthorized: 401,
   notFound: 404,

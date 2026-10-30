@@ -6,7 +6,8 @@ import { categoryHref } from '@/components/layout/megaMenuLinks';
 import { ProductGallery } from '@/components/product/detail/ProductGallery';
 import { PurchasePanel } from '@/components/product/detail/PurchasePanel';
 import { ProductDetailSkeleton } from '@/components/product/detail/ProductDetailSkeleton';
-import { ProductGrid } from '@/components/product/ProductGrid';
+import { ProductCarousel } from '@/components/product/ProductCarousel';
+import { ReviewsSection } from '@/components/product/reviews/ReviewsSection';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { Rating } from '@/components/ui/Rating';
@@ -41,9 +42,13 @@ async function ProductDetail({ slug }: { slug: string }) {
   const [product, products] = await Promise.all([getProductBySlug(slug), getProducts()]);
   if (!product) notFound();
 
-  const similar = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, LIMITS.similarProducts);
+  // Same category first (closest price first), then top-rated items from other categories.
+  const related = [
+    ...products
+      .filter((p) => p.category === product.category && p.id !== product.id)
+      .sort((a, b) => Math.abs(a.price - product.price) - Math.abs(b.price - product.price)),
+    ...products.filter((p) => p.category !== product.category).sort((a, b) => b.rating - a.rating),
+  ].slice(0, LIMITS.relatedProducts);
 
   const crumbs = [
     { label: 'Home', href: ROUTES.home },
@@ -96,18 +101,17 @@ async function ProductDetail({ slug }: { slug: string }) {
         </dl>
       </section>
 
-      {similar.length > 0 && (
-        <section aria-labelledby="similar-heading" className="mt-16">
-          <h2 id="similar-heading" className="text-2xl font-bold text-ink-900">
-            You may also like
-          </h2>
-          <div className="mt-6">
-            <ErrorBoundary compact title="Recommendations are unavailable">
-              <ProductGrid products={similar} />
-            </ErrorBoundary>
-          </div>
-        </section>
-      )}
+      <div className="mt-16">
+        <ErrorBoundary compact title="Related products are unavailable">
+          <ProductCarousel id="related-heading" title="Related products" products={related} />
+        </ErrorBoundary>
+      </div>
+
+      <div className="mt-16 border-t border-mist pt-14">
+        <ErrorBoundary compact title="Reviews could not be loaded">
+          <ReviewsSection product={product} />
+        </ErrorBoundary>
+      </div>
 
       <JsonLd data={productJsonLd(product)} />
       <JsonLd

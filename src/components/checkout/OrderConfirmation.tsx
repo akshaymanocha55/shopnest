@@ -3,7 +3,7 @@
 import { FileQuestion, MapPin, PackageCheck } from 'lucide-react';
 import Image from 'next/image';
 import { PAYMENT_METHODS, ROUTES } from '@/constants';
-import { formatDay, formatPrice } from '@/lib/format';
+import { formatAddress, formatDay, formatPrice } from '@/lib/format';
 import { useAppSelector } from '@/store/hooks';
 import { selectOrderById } from '@/store/slices/orders.slice';
 import { OrderSummary } from '../cart/OrderSummary';
@@ -63,17 +63,27 @@ export function OrderConfirmation({ orderId }: { orderId: string }) {
               <p className="font-semibold text-ink-900">
                 Arriving by {formatDay(order.estimatedDelivery)}
               </p>
-              <p className="text-sm text-ink-600">Paid with {payment}</p>
+              <p className="text-sm text-ink-600">
+                Paid with {payment}
+                {order.couponCode && `, coupon ${order.couponCode} applied`}
+              </p>
             </div>
           </div>
-          <div className="rounded-[var(--radius-card)] bg-white p-5 ring-1 ring-mist">
-            <p className="flex items-center gap-2 font-semibold text-ink-900">
-              <MapPin className="size-4" /> Delivering to {order.address.fullName}
-            </p>
-            <p className="mt-1 text-ink-600">
-              {order.address.addressLine}, {order.address.city}, {order.address.state}{' '}
-              {order.address.pincode}
-            </p>
+          <div className="grid gap-4 rounded-[var(--radius-card)] bg-white p-5 ring-1 ring-mist sm:grid-cols-2">
+            <div>
+              <p className="flex items-center gap-2 font-semibold text-ink-900">
+                <MapPin className="size-4" /> Shipping to {order.shippingAddress.fullName}
+              </p>
+              <p className="mt-1 text-sm text-ink-600">{formatAddress(order.shippingAddress)}</p>
+            </div>
+            <div>
+              <p className="font-semibold text-ink-900">Billing address</p>
+              <p className="mt-1 text-sm text-ink-600">
+                {formatAddress(order.billingAddress) === formatAddress(order.shippingAddress)
+                  ? 'Same as shipping address'
+                  : `${order.billingAddress.fullName}, ${formatAddress(order.billingAddress)}`}
+              </p>
+            </div>
           </div>
           <ul className="divide-y divide-mist rounded-[var(--radius-card)] bg-white px-5 ring-1 ring-mist">
             {order.items.map((item) => (

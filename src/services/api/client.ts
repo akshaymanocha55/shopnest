@@ -14,6 +14,8 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 type QueryValue = string | number | boolean | null | undefined;
 
 export interface RequestOptions {
+  /** Override the default API base URL (e.g. for the location API). */
+  baseUrl?: string;
   params?: Record<string, QueryValue>;
   body?: unknown;
   headers?: HeadersInit;
@@ -27,8 +29,12 @@ export interface RequestOptions {
   cache?: RequestCache;
 }
 
-function buildUrl(endpoint: string, params?: RequestOptions['params']): string {
-  const url = new URL(endpoint.replace(/^\//, ''), `${env.apiBaseUrl}/`);
+function buildUrl(
+  endpoint: string,
+  params?: RequestOptions['params'],
+  baseUrl: string = env.apiBaseUrl,
+): string {
+  const url = new URL(endpoint.replace(/^\//, ''), `${baseUrl.replace(/\/$/, '')}/`);
   Object.entries(params ?? {}).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
       url.searchParams.set(key, String(value));
@@ -75,6 +81,7 @@ async function request<T>(
   hasRefreshed = false,
 ): Promise<T> {
   const {
+    baseUrl,
     params,
     body,
     headers,
@@ -86,9 +93,14 @@ async function request<T>(
   const maxRetries = options.retries ?? (method === 'GET' ? 1 : 0);
 
   try {
-    const response = await fetch(buildUrl(endpoint, params), {
+    const response = await fetch(buildUrl(endpoint, params, baseUrl), {
       method,
-      headers: await buildHeaders({ auth, hasBody: body !== undefined, extra: headers }),
+      headers: await buildHeaders({
+        auth,
+        hasBody: body !== undefined,
+        extra: headers,
+        thirdParty: Boolean(baseUrl),
+      }),
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: withTimeout(timeoutMs, signal),
       cache,

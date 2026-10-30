@@ -7,13 +7,14 @@ import { toast } from 'sonner';
 import { LIMITS, PRICING, ROUTES, TOAST } from '@/constants';
 import { getDefaultVariants, useAddToCart } from '@/hooks/useAddToCart';
 import { formatDay, formatPrice } from '@/lib/format';
-import { getUnitPrice } from '@/lib/pricing';
+import { discountPercent, getUnitPrice } from '@/lib/pricing';
 import type { SelectedVariants } from '@/types/cart';
 import type { Product } from '@/types/product';
 import { Button } from '../../ui/Button';
 import { Price } from '../../ui/Price';
 import { QuantityStepper } from '../../ui/QuantityStepper';
 import { AddToCartButton } from '../AddToCartButton';
+import { WishlistButton } from '../WishlistButton';
 import { VariantSelector } from './VariantSelector';
 
 const subscribeNoop = () => () => {};
@@ -62,7 +63,14 @@ export function PurchasePanel({ product }: { product: Product }) {
     <div className="flex flex-col gap-6">
       <div>
         <Price price={price} mrp={mrp} size="lg" />
-        <p className="mt-1 text-sm text-ink-400">Inclusive of all taxes</p>
+        <p className="mt-1 text-sm text-ink-500">
+          {mrp > price && (
+            <span className="mr-2 font-semibold text-leaf-600">
+              You save {formatPrice(mrp - price)} ({discountPercent(price, mrp)}% off)
+            </span>
+          )}
+          Inclusive of all taxes
+        </p>
       </div>
 
       {product.variantGroups.length > 0 && (
@@ -88,6 +96,7 @@ export function PurchasePanel({ product }: { product: Product }) {
           <Zap className="size-4" fill="currentColor" />
           Buy now
         </Button>
+        <WishlistButton product={product} variant="outline" className="shrink-0" />
       </div>
 
       <ul className="space-y-3 rounded-[var(--radius-card)] bg-white p-5 text-sm ring-1 ring-mist">

@@ -9,6 +9,7 @@ import type { Product } from '@/types/product';
 import { Price } from '../ui/Price';
 import { Rating } from '../ui/Rating';
 import { AddToCartButton } from './AddToCartButton';
+import { WishlistButton } from './WishlistButton';
 
 interface ProductCardProps {
   product: Product;
@@ -33,26 +34,29 @@ export const ProductCard = memo(function ProductCard({
         className,
       )}
     >
-      <Link
-        href={ROUTES.product(product.slug)}
-        className="relative block aspect-square overflow-hidden rounded-2xl bg-paper"
-        aria-label={product.title}
-      >
-        <Image
-          src={product.image}
-          alt={product.title}
-          fill
-          sizes="(min-width: 1280px) 280px, (min-width: 768px) 30vw, 50vw"
-          loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : undefined}
-          className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-105"
-        />
-        {product.discountPercent >= 30 && (
-          <span className="absolute top-3 left-3 rounded-full bg-marigold-400 px-2.5 py-1 text-xs font-bold text-ink-900">
-            {product.discountPercent}% off
-          </span>
-        )}
-      </Link>
+      <div className="relative">
+        <Link
+          href={ROUTES.product(product.slug)}
+          className="relative block aspect-square overflow-hidden rounded-2xl bg-paper"
+          aria-label={product.title}
+        >
+          <Image
+            src={product.image}
+            alt={product.title}
+            fill
+            sizes="(min-width: 1280px) 280px, (min-width: 768px) 30vw, 50vw"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : undefined}
+            className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-105"
+          />
+          {product.discountPercent >= 30 && (
+            <span className="absolute top-3 left-3 rounded-full bg-marigold-400 px-2.5 py-1 text-xs font-bold text-ink-900">
+              {product.discountPercent}% off
+            </span>
+          )}
+        </Link>
+        <WishlistButton product={product} className="absolute top-3 right-3 z-10" />
+      </div>
 
       <div className="flex flex-1 flex-col gap-2 px-1 pt-3">
         <p className="text-xs font-medium text-ink-400">{product.subcategory}</p>

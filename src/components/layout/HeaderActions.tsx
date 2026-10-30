@@ -1,15 +1,17 @@
 'use client';
 
-import { ShoppingBag, UserRound } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 import { memo } from 'react';
 import { ROUTES } from '@/constants';
+import { useHydrated } from '@/hooks/useHydrated';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectAuthStatus, selectUserFirstName } from '@/store/slices/auth.slice';
+import { selectAuthStatus } from '@/store/slices/auth.slice';
 import { selectCartCount } from '@/store/slices/cart.slice';
 import { openLoginPrompt } from '@/store/slices/ui.slice';
 import { ButtonLink } from '../ui/ButtonLink';
 import { Skeleton } from '../ui/Skeleton';
+import { AccountMenu } from './AccountMenu';
 
 /** Subscribes only to the cart count, so cart line edits elsewhere do not re-render it. */
 const CartLink = memo(function CartLink() {
@@ -49,10 +51,10 @@ function GuestCartButton() {
 }
 
 export function HeaderActions() {
+  const hydrated = useHydrated();
   const status = useAppSelector(selectAuthStatus);
-  const firstName = useAppSelector(selectUserFirstName);
 
-  if (status === 'checking') {
+  if (!hydrated || status === 'checking') {
     return (
       <div className="flex items-center gap-2" aria-hidden>
         <Skeleton className="h-10 w-24 rounded-full" />
@@ -77,15 +79,7 @@ export function HeaderActions() {
 
   return (
     <div className="flex items-center gap-1 sm:gap-2">
-      <Link
-        href={ROUTES.account}
-        className="flex h-11 items-center gap-2 rounded-full pr-3 pl-1.5 text-sm font-semibold text-ink-800 transition hover:bg-ink-50"
-      >
-        <span className="grid size-8 place-items-center rounded-full bg-marigold-100 text-ink-800">
-          <UserRound className="size-4.5" />
-        </span>
-        <span className="hidden max-w-24 truncate sm:inline">{firstName}</span>
-      </Link>
+      <AccountMenu />
       <CartLink />
     </div>
   );

@@ -7,6 +7,7 @@ import { memo, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { LIMITS, ROUTES, TOAST } from '@/constants';
 import { formatPrice } from '@/lib/format';
+import { discountPercent } from '@/lib/pricing';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addItem, removeItem, selectCartItemById, updateQuantity } from '@/store/slices/cart.slice';
@@ -40,6 +41,7 @@ export const CartLine = memo(function CartLine({ lineId }: { lineId: string }) {
   }, [dispatch, item, lineId]);
 
   if (!item) return null;
+  const off = discountPercent(item.unitPrice, item.unitMrp);
 
   return (
     <li
@@ -71,10 +73,18 @@ export const CartLine = memo(function CartLine({ lineId }: { lineId: string }) {
             </Link>
             {item.variantLabel && <p className="mt-1 text-sm text-ink-500">{item.variantLabel}</p>}
           </div>
-          <div className="text-right">
-            <p className="font-display text-lg font-bold text-ink-900 tabular-nums">
+          <div className="shrink-0 text-right">
+            <p className="font-display text-lg leading-7 font-bold text-ink-900 tabular-nums">
               {formatPrice(item.unitPrice * item.quantity)}
             </p>
+            {off > 0 && (
+              <p className="text-sm leading-6">
+                <span className="text-ink-400 tabular-nums line-through">
+                  {formatPrice(item.unitMrp * item.quantity)}
+                </span>
+                <span className="ml-1.5 font-semibold text-leaf-600">{off}% off</span>
+              </p>
+            )}
             {item.quantity > 1 && (
               <p className="text-xs text-ink-400">{formatPrice(item.unitPrice)} each</p>
             )}

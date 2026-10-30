@@ -13,6 +13,7 @@ concurrency:
 # Public, non-secret build values. Override them in Settings > Secrets and variables > Actions.
 env:
   NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL || 'https://fakestoreapi.com' }}
+  NEXT_PUBLIC_LOCATION_API_BASE_URL: ${{ vars.NEXT_PUBLIC_LOCATION_API_BASE_URL || 'https://countriesnow.space/api/v0.1' }}
   NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000' }}
   NEXT_PUBLIC_ENCRYPTION_KEY: ${{ secrets.NEXT_PUBLIC_ENCRYPTION_KEY || 'ci-only-encryption-key-not-for-prod' }}
   NEXT_PUBLIC_TOKEN_SECRET: ${{ secrets.NEXT_PUBLIC_TOKEN_SECRET || 'ci-only-token-secret-not-for-prod' }}

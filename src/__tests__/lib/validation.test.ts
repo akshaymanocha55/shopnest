@@ -1,4 +1,10 @@
-import { addressSchema, loginSchema, otpSchema, signupSchema } from '@/lib/validation';
+import {
+  addressSchema,
+  loginSchema,
+  otpSchema,
+  reviewSchema,
+  signupSchema,
+} from '@/lib/validation';
 
 describe('validation schemas', () => {
   it.each(['9876543210', '6000000000'])('accepts mobile %s', (mobile) => {
@@ -27,17 +33,42 @@ describe('validation schemas', () => {
     expect(otpSchema.safeParse('11a111').success).toBe(false);
   });
 
-  it('validates an Indian address', () => {
-    const valid = {
-      fullName: 'Akshay Manocha',
-      mobile: '9876543210',
-      pincode: '110092',
-      addressLine: '12 Laxmi Nagar Main Road',
-      city: 'Delhi',
-      state: 'Delhi',
+  const address = {
+    fullName: 'Akshay Manocha',
+    mobile: '9876543210',
+    addressLine: '12 Laxmi Nagar Main Road',
+    country: 'India',
+    state: 'Delhi',
+    city: 'Delhi',
+    postalCode: '110092',
+  };
+
+  it('validates an Indian address (6-digit pincode, 10-digit mobile)', () => {
+    expect(addressSchema.safeParse(address).success).toBe(true);
+    expect(addressSchema.safeParse({ ...address, postalCode: '011092' }).success).toBe(false);
+    expect(addressSchema.safeParse({ ...address, mobile: '12345' }).success).toBe(false);
+  });
+
+  it('uses international rules outside India', () => {
+    const uk = {
+      ...address,
+      country: 'United Kingdom',
+      state: 'England',
+      city: 'London',
+      postalCode: 'SW1A 1AA',
+      mobile: '+447911123456',
     };
-    expect(addressSchema.safeParse(valid).success).toBe(true);
-    expect(addressSchema.safeParse({ ...valid, pincode: '011092' }).success).toBe(false);
-    expect(addressSchema.safeParse({ ...valid, state: 'Atlantis' }).success).toBe(false);
+    expect(addressSchema.safeParse(uk).success).toBe(true);
+    expect(addressSchema.safeParse({ ...uk, country: '' }).success).toBe(false);
+  });
+
+  it('validates reviews', () => {
+    expect(
+      reviewSchema.safeParse({ rating: 5, title: 'Great', body: 'Really happy with it.' }).success,
+    ).toBe(true);
+    expect(
+      reviewSchema.safeParse({ rating: 0, title: 'Great', body: 'Really happy with it.' }).success,
+    ).toBe(false);
+    expect(reviewSchema.safeParse({ rating: 4, title: '', body: 'short' }).success).toBe(false);
   });
 });

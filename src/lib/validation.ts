@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { INDIAN_STATES, OTP_LENGTH, VALIDATION } from '@/constants';
+import { OTP_LENGTH, VALIDATION } from '@/constants';
 
 export const mobileSchema = z
   .string()
@@ -34,24 +34,46 @@ export const signupSchema = z.object({
 });
 export const profileSchema = z.object({ name: nameSchema, email: emailSchema });
 
-export const addressSchema = z.object({
-  fullName: nameSchema,
-  mobile: mobileSchema,
-  pincode: z
-    .string()
-    .trim()
-    .regex(/^[1-9]\d{5}$/, VALIDATION.pincodeInvalid),
-  addressLine: z
-    .string()
-    .trim()
-    .min(1, VALIDATION.addressRequired)
-    .min(10, VALIDATION.addressShort)
-    .max(200),
-  city: z.string().trim().min(2, VALIDATION.cityRequired).max(50),
-  state: z.enum(INDIAN_STATES, { error: VALIDATION.stateRequired }),
+const required = (message: string) => z.string().trim().min(1, message);
+
+export const addressSchema = z
+  .object({
+    fullName: nameSchema,
+    mobile: z
+      .string()
+      .trim()
+      .regex(/^\+?\d{7,15}$/, VALIDATION.phoneInvalid),
+    addressLine: required(VALIDATION.addressRequired).min(10, VALIDATION.addressShort).max(200),
+    country: required(VALIDATION.countryRequired),
+    state: required(VALIDATION.stateRequired).max(60),
+    city: required(VALIDATION.cityRequired).max(60),
+    postalCode: required(VALIDATION.postalRequired).max(10),
+  })
+  .superRefine((value, ctx) => {
+    const india = value.country === 'India';
+    if (india && !/^[6-9]\d{9}$/.test(value.mobile)) {
+      ctx.addIssue({ code: 'custom', path: ['mobile'], message: VALIDATION.mobileInvalid });
+    }
+    const postalOk = india
+      ? /^[1-9]\d{5}$/.test(value.postalCode)
+      : /^[A-Za-z0-9 -]{3,10}$/.test(value.postalCode);
+    if (!postalOk) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['postalCode'],
+        message: india ? VALIDATION.pincodeInvalid : VALIDATION.postalInvalid,
+      });
+    }
+  });
+
+export const reviewSchema = z.object({
+  rating: z.number().int().min(1, VALIDATION.ratingRequired).max(5),
+  title: required(VALIDATION.reviewTitleRequired).max(80),
+  body: required(VALIDATION.reviewBodyRequired).min(10, VALIDATION.reviewBodyShort).max(1000),
 });
 
 export type LoginForm = z.infer<typeof loginSchema>;
 export type SignupForm = z.infer<typeof signupSchema>;
 export type ProfileForm = z.infer<typeof profileSchema>;
 export type AddressForm = z.infer<typeof addressSchema>;
+export type ReviewForm = z.infer<typeof reviewSchema>;

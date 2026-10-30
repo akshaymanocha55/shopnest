@@ -23,4 +23,8 @@ export const STORAGE_KEYS = {
   users: 'sn_users_db',
   cart: (userId: string) => `sn_cart_${userId}`,
   orders: (userId: string) => `sn_orders_${userId}`,
+  wishlist: (userId: string) => `sn_wishlist_${userId}`,
+  addresses: (userId: string) => `sn_addresses_${userId}`,
+  reviews: 'sn_reviews',
+  deliveryLocation: 'sn_delivery_location',
 } as const;

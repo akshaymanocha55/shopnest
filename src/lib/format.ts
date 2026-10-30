@@ -26,3 +26,13 @@ export const formatDay = (iso: string) => dayFormatter.format(new Date(iso));
 export function maskMobile(mobile: string): string {
   return mobile.length === 10 ? `+91 ${mobile.slice(0, 2)}******${mobile.slice(-2)}` : mobile;
 }
+
+export function formatAddress(a: {
+  addressLine: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}): string {
+  return `${a.addressLine}, ${a.city}, ${a.state} ${a.postalCode}, ${a.country}`;
+}

@@ -19,7 +19,10 @@ export interface PriceSummary {
   itemCount: number;
   subtotal: number;
   mrpTotal: number;
+  /** MRP minus selling price. */
   discount: number;
+  couponCode: string | null;
+  couponDiscount: number;
   deliveryFee: number;
   total: number;
 }

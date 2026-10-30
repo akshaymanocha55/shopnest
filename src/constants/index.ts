@@ -5,3 +5,5 @@ export * from './auth';
 export * from './messages';
 export * from './catalog';
 export * from './checkout';
+export * from './promotions';
+export * from './reviews';

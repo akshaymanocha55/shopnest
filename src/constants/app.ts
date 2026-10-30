@@ -15,7 +15,9 @@ export const USD_TO_INR = 84;
 export const PRICING = {
   freeDeliveryThreshold: 999,
   deliveryFee: 49,
-  deliveryDays: 4,
+  /** Domestic (India) delivery time. */
+  deliveryDays: 2,
+  internationalDeliveryDays: 7,
 } as const;
 
 export const TIMING = {
@@ -36,7 +38,7 @@ export const CACHE = {
 export const LIMITS = {
   maxQuantityPerItem: 10,
   searchSuggestions: 6,
-  similarProducts: 4,
+  relatedProducts: 8,
   /** Lists longer than this switch to a virtualized renderer. */
   virtualizeThreshold: 40,
 } as const;

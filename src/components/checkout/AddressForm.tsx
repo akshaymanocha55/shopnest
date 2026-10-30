@@ -1,107 +1,155 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronDown } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { INDIAN_STATES } from '@/constants';
-import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { addressSchema, type AddressForm as AddressValues } from '@/lib/validation';
-import type { ShippingAddress } from '@/types/order';
+import { locationQueries } from '@/services/queries/location.queries';
+import type { AddressFields } from '@/types/order';
+import { CountrySelect } from '../location/CountrySelect';
+import { SuggestInput } from '../location/SuggestInput';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
 interface AddressFormProps {
-  defaultValues: Partial<ShippingAddress>;
-  onSubmit: (address: ShippingAddress) => void;
+  /** Prefix for input ids so two forms can be on the page at once (shipping + billing). */
+  idPrefix: string;
+  defaultValues?: Partial<AddressFields>;
+  submitLabel: string;
+  onSubmit: (address: AddressFields) => void;
+  onCancel?: () => void;
 }
 
-export function AddressForm({ defaultValues, onSubmit }: AddressFormProps) {
+const EMPTY: AddressFields = {
+  fullName: '',
+  mobile: '',
+  addressLine: '',
+  country: 'India',
+  state: '',
+  city: '',
+  postalCode: '',
+};
+
+/** Address form with country (API), state and city (API suggestions) and country-aware validation. */
+export function AddressForm({
+  idPrefix,
+  defaultValues,
+  submitLabel,
+  onSubmit,
+  onCancel,
+}: AddressFormProps) {
   const {
     register,
+    control,
     handleSubmit,
-    formState: { errors },
+    setValue,
+    formState: { errors, isSubmitting },
   } = useForm<AddressValues>({
     resolver: zodResolver(addressSchema),
-    defaultValues: defaultValues as Partial<AddressValues>,
+    defaultValues: { ...EMPTY, ...defaultValues },
     mode: 'onTouched',
   });
 
+  // useWatch re-renders only this form, and only when the country changes.
+  const country = useWatch({ control, name: 'country' });
+  const isIndia = country === 'India';
+  const { data: states = [], isFetching: loadingStates } = useQuery(
+    locationQueries.states(country),
+  );
+  const { data: cities = [], isFetching: loadingCities } = useQuery(
+    locationQueries.cities(country),
+  );
+  const id = (name: string) => `${idPrefix}-${name}`;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="grid gap-5 sm:grid-cols-2">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      className="grid animate-fade-in gap-5 sm:grid-cols-2"
+    >
       <Input
+        id={id('fullName')}
         label="Full name"
         autoComplete="name"
         error={errors.fullName?.message}
         {...register('fullName')}
       />
       <Input
+        id={id('mobile')}
         label="Mobile number"
         type="tel"
-        inputMode="numeric"
-        maxLength={10}
-        leading="+91"
-        autoComplete="tel-national"
+        inputMode="tel"
+        maxLength={15}
+        leading={isIndia ? '+91' : undefined}
+        autoComplete="tel"
         error={errors.mobile?.message}
         {...register('mobile')}
       />
       <Input
+        id={id('addressLine')}
         label="Address"
-        placeholder="House no., street, area"
+        placeholder="House no., street, area, landmark"
         autoComplete="street-address"
         className="sm:col-span-2"
         error={errors.addressLine?.message}
         {...register('addressLine')}
       />
-      <Input
+      <Controller
+        control={control}
+        name="country"
+        render={({ field }) => (
+          <CountrySelect
+            id={id('country')}
+            label="Country"
+            autoComplete="country-name"
+            error={errors.country?.message}
+            value={field.value}
+            onBlur={field.onBlur}
+            onChange={(event) => {
+              field.onChange(event.target.value);
+              // State and city lists depend on the country, so reset them.
+              setValue('state', '');
+              setValue('city', '');
+            }}
+          />
+        )}
+      />
+      <SuggestInput
+        id={id('state')}
+        label="State"
+        autoComplete="address-level1"
+        suggestions={states}
+        loading={loadingStates}
+        error={errors.state?.message}
+        {...register('state')}
+      />
+      <SuggestInput
+        id={id('city')}
         label="City"
         autoComplete="address-level2"
+        suggestions={cities}
+        loading={loadingCities}
         error={errors.city?.message}
         {...register('city')}
       />
       <Input
-        label="Pincode"
-        inputMode="numeric"
-        maxLength={6}
+        id={id('postalCode')}
+        label={isIndia ? 'Pincode' : 'Postal code'}
+        inputMode={isIndia ? 'numeric' : 'text'}
+        maxLength={10}
         autoComplete="postal-code"
-        error={errors.pincode?.message}
-        {...register('pincode')}
+        error={errors.postalCode?.message}
+        {...register('postalCode')}
       />
-      <div className="flex flex-col gap-1.5 sm:col-span-2">
-        <label htmlFor="state" className="text-sm font-medium text-ink-700">
-          State
-        </label>
-        <div className="relative">
-          <select
-            id="state"
-            defaultValue=""
-            aria-invalid={Boolean(errors.state) || undefined}
-            className={cn(
-              'h-12 w-full cursor-pointer appearance-none rounded-xl bg-white px-4 text-[15px] ring-1 ring-mist outline-none ring-inset focus:ring-2 focus:ring-ink-700',
-              errors.state && 'ring-rose-500',
-            )}
-            {...register('state')}
-          >
-            <option value="" disabled>
-              Select your state
-            </option>
-            {INDIAN_STATES.map((state) => (
-              <option key={state} value={state}>
-                {state}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-ink-400" />
-        </div>
-        {errors.state && (
-          <p role="alert" className="text-sm text-rose-600">
-            {errors.state.message}
-          </p>
-        )}
-      </div>
-      <div className="sm:col-span-2">
-        <Button type="submit" size="lg" className="w-full sm:w-auto">
-          Continue to payment
+      <div className="flex flex-wrap gap-3 sm:col-span-2">
+        <Button type="submit" loading={isSubmitting}>
+          {submitLabel}
         </Button>
+        {onCancel && (
+          <Button variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
       </div>
     </form>
   );

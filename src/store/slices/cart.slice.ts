@@ -18,7 +18,7 @@ const cartAdapter = createEntityAdapter<CartItem, string>({ selectId: (item) => 
 
 const cartSlice = createSlice({
   name: 'cart',
-  initialState: cartAdapter.getInitialState(),
+  initialState: cartAdapter.getInitialState<{ couponCode: string | null }>({ couponCode: null }),
   reducers: {
     addItem(state, action: PayloadAction<CartItem>) {
       const incoming = action.payload;
@@ -39,12 +39,32 @@ const cartSlice = createSlice({
       });
     },
     removeItem: cartAdapter.removeOne,
-    clearCart: cartAdapter.removeAll,
-    hydrateCart: cartAdapter.setAll,
+    clearCart(state) {
+      cartAdapter.removeAll(state);
+      state.couponCode = null;
+    },
+    hydrateCart(state, action: PayloadAction<{ items: CartItem[]; couponCode?: string | null }>) {
+      cartAdapter.setAll(state, action.payload.items);
+      state.couponCode = action.payload.couponCode ?? null;
+    },
+    applyCoupon(state, action: PayloadAction<string>) {
+      state.couponCode = action.payload.trim().toUpperCase();
+    },
+    removeCoupon(state) {
+      state.couponCode = null;
+    },
   },
 });
 
-export const { addItem, updateQuantity, removeItem, clearCart, hydrateCart } = cartSlice.actions;
+export const {
+  addItem,
+  updateQuantity,
+  removeItem,
+  clearCart,
+  hydrateCart,
+  applyCoupon,
+  removeCoupon,
+} = cartSlice.actions;
 export default cartSlice.reducer;
 
 const adapterSelectors = cartAdapter.getSelectors<RootState>((state) => state.cart);
@@ -54,7 +74,11 @@ export const selectCartItems = adapterSelectors.selectAll;
 export const selectCartItemById = adapterSelectors.selectById;
 
 /** Memoised: recomputed only when cart items change. */
-export const selectCartSummary = createSelector([selectCartItems], calculateSummary);
+export const selectCouponCode = (state: RootState) => state.cart.couponCode;
+export const selectCartSummary = createSelector(
+  [selectCartItems, selectCouponCode],
+  calculateSummary,
+);
 export const selectCartCount = createSelector([selectCartSummary], (summary) => summary.itemCount);
 export const selectQuantityInCart = (state: RootState, lineId: string) =>
   state.cart.entities[lineId]?.quantity ?? 0;

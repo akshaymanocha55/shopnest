@@ -18,7 +18,7 @@ export function OrderSummary({ summary, children, title = 'Order summary' }: Ord
     <div className="rounded-[var(--radius-card)] bg-white p-6 ring-1 ring-mist">
       <h2 className="text-xl font-bold text-ink-900">{title}</h2>
 
-      {summary.deliveryFee > 0 && (
+      {summary.deliveryFee > 0 && remaining > 0 && (
         <div className="mt-4 rounded-xl bg-marigold-50 p-3">
           <p className="text-sm text-ink-700">
             Add <span className="font-semibold">{formatPrice(remaining)}</span> more for free
@@ -36,14 +36,20 @@ export function OrderSummary({ summary, children, title = 'Order summary' }: Ord
       <dl className="mt-5 space-y-3 text-[15px]">
         <div className="flex justify-between">
           <dt className="text-ink-500">
-            Price ({summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'})
+            MRP ({summary.itemCount} {summary.itemCount === 1 ? 'item' : 'items'})
           </dt>
           <dd className="tabular-nums">{formatPrice(summary.mrpTotal)}</dd>
         </div>
         {summary.discount > 0 && (
           <div className="flex justify-between text-leaf-600">
-            <dt>Discount</dt>
+            <dt>Discount ({Math.round((summary.discount / summary.mrpTotal) * 100)}% off)</dt>
             <dd className="tabular-nums">−{formatPrice(summary.discount)}</dd>
+          </div>
+        )}
+        {summary.couponDiscount > 0 && (
+          <div className="flex justify-between text-leaf-600">
+            <dt>Coupon ({summary.couponCode})</dt>
+            <dd className="tabular-nums">−{formatPrice(summary.couponDiscount)}</dd>
           </div>
         )}
         <div className="flex justify-between">

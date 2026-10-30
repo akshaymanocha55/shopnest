@@ -1,13 +1,23 @@
 import type { CartItem, PriceSummary } from './cart';
 
-export interface ShippingAddress {
+export interface AddressFields {
   fullName: string;
   mobile: string;
-  pincode: string;
   addressLine: string;
-  city: string;
+  country: string;
   state: string;
+  city: string;
+  postalCode: string;
 }
+
+/** A saved address in the user's address book. */
+export interface Address extends AddressFields {
+  id: string;
+  createdAt: string;
+}
+
+/** Kept for readability where an address is used for delivery. */
+export type ShippingAddress = AddressFields;
 
 export type PaymentMethod = 'cod' | 'upi' | 'card';
 
@@ -18,7 +28,9 @@ export interface Order {
   userId: string;
   items: CartItem[];
   summary: PriceSummary;
-  address: ShippingAddress;
+  shippingAddress: AddressFields;
+  billingAddress: AddressFields;
+  couponCode: string | null;
   paymentMethod: PaymentMethod;
   status: OrderStatus;
   placedAt: string;
