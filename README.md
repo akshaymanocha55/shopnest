@@ -2,7 +2,7 @@
 
 A responsive e-commerce storefront built with **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Redux Toolkit**, **TanStack Query** and **Tailwind CSS v4**. Product data comes from the [FakeStore API](https://fakestoreapi.com). There is no backend: authentication, orders and token refresh are simulated in the browser (see [Architecture decisions](#architecture-decisions)).
 
-- **Live demo:** _add your Vercel URL here_
+- **Live demo:** https://shopnest-neon.vercel.app
 - **Demo login:** sign up with any 10-digit Indian mobile number (starting 6–9). The OTP is always **`111111`**.
 
 ---
