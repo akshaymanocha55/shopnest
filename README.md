@@ -55,12 +55,12 @@ npm run dev
 
 ### Environment variables
 
-| Variable                     | Purpose                                                          |
-| ---------------------------- | ---------------------------------------------------------------- |
-| `NEXT_PUBLIC_API_BASE_URL`   | API base URL (`https://fakestoreapi.com`)                        |
-| `NEXT_PUBLIC_SITE_URL`       | Public site URL, used for canonical URLs, sitemap and Open Graph |
-| `NEXT_PUBLIC_ENCRYPTION_KEY` | Key for AES-GCM encryption of cookie values                      |
-| `NEXT_PUBLIC_TOKEN_SECRET`   | Secret used to sign the mock JWTs                                |
+| Variable                     | Purpose                                                                                                                    |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_BASE_URL`   | API base URL (`https://fakestoreapi.com`)                                                                                  |
+| `NEXT_PUBLIC_SITE_URL`       | Public site URL, used for canonical URLs, sitemap and Open Graph. Optional on Vercel (falls back to the production domain) |
+| `NEXT_PUBLIC_ENCRYPTION_KEY` | Key for AES-GCM encryption of cookie values                                                                                |
+| `NEXT_PUBLIC_TOKEN_SECRET`   | Secret used to sign the mock JWTs                                                                                          |
 
 ### Scripts
 
@@ -212,7 +212,7 @@ npm test
 
 1. Push this repo to GitHub.
 2. In Vercel, choose **Add New → Project** and import the repo (the framework is detected automatically).
-3. Add the environment variables from `.env.example`. Set `NEXT_PUBLIC_SITE_URL` to your Vercel URL, e.g. `https://shopnest.vercel.app`.
+3. Add the environment variables from `.env.example`. `NEXT_PUBLIC_SITE_URL` is optional on Vercel: it falls back to the project's production domain.
 4. Deploy. Every push to `main` redeploys automatically.
 
 ## What I'd do with more time

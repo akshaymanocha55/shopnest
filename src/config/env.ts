@@ -17,7 +17,17 @@ export const env = {
   ),
   /** India Post pincode lookup. Optional: has a public default. */
   pincodeApiBaseUrl: process.env.NEXT_PUBLIC_PINCODE_API_BASE_URL || 'https://api.postalpincode.in',
-  siteUrl: required('NEXT_PUBLIC_SITE_URL', process.env.NEXT_PUBLIC_SITE_URL).replace(/\/$/, ''),
+  /**
+   * Canonical site URL. On Vercel it falls back to the project's production
+   * domain (a system variable Vercel exposes to Next.js builds).
+   */
+  siteUrl: required(
+    'NEXT_PUBLIC_SITE_URL',
+    process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`
+        : undefined),
+  ).replace(/\/$/, ''),
   encryptionKey: required('NEXT_PUBLIC_ENCRYPTION_KEY', process.env.NEXT_PUBLIC_ENCRYPTION_KEY),
   tokenSecret: required('NEXT_PUBLIC_TOKEN_SECRET', process.env.NEXT_PUBLIC_TOKEN_SECRET),
   isProd: process.env.NODE_ENV === 'production',
