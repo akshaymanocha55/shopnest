@@ -27,16 +27,20 @@ export function Hero({ products }: { products: Product[] }) {
             Jackets, jewellery and storage drives, delivered across India in {PRICING.deliveryDays}{' '}
             days. Delivery is free on orders over {formatPrice(PRICING.freeDeliveryThreshold)}.
           </p>
-          <div className="mt-9 flex animate-rise flex-wrap gap-3 [animation-delay:220ms]">
-            <ButtonLink href={ROUTES.products} size="lg">
-              Shop all products
+          {/* Up to tablet: two equal buttons side by side with short labels. Laptop+: full labels. */}
+          <div className="mt-9 grid animate-rise grid-cols-2 gap-3 [animation-delay:220ms] lg:flex lg:flex-wrap">
+            <ButtonLink href={ROUTES.products} size="lg" className="px-4 lg:px-7">
+              <span className="lg:hidden">Shop all</span>
+              <span className="hidden lg:inline">Shop all products</span>
             </ButtonLink>
             <ButtonLink
               href={`${ROUTES.products}?${FILTER_PARAMS.sort}=discount`}
               size="lg"
               variant="secondary"
+              className="px-4 lg:px-7"
             >
-              See today’s deals
+              <span className="lg:hidden">Today’s deals</span>
+              <span className="hidden lg:inline">See today’s deals</span>
             </ButtonLink>
           </div>
         </div>

@@ -4,7 +4,7 @@ export function ProductDetailSkeleton() {
   return (
     <div className="container-page pt-6 pb-10" aria-busy aria-label="Loading product">
       <Skeleton className="h-5 w-72" />
-      <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
+      <div className="mt-6 grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14">
         <div className="flex flex-col-reverse gap-3 md:flex-row">
           <div className="flex gap-3 md:flex-col">
             {[0, 1, 2].map((i) => (
