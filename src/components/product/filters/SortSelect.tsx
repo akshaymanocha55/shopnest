@@ -99,7 +99,7 @@ export const SortSelect = memo(function SortSelect({ value, onChange }: SortSele
   };
 
   return (
-    <div ref={rootRef} className="relative" onKeyDown={onKeyDown}>
+    <div ref={rootRef} className="relative min-w-0" onKeyDown={onKeyDown}>
       <button
         ref={buttonRef}
         type="button"
@@ -107,17 +107,22 @@ export const SortSelect = memo(function SortSelect({ value, onChange }: SortSele
         aria-expanded={open}
         aria-controls={listId}
         onClick={() => (open ? close() : openMenu())}
+        aria-label={`Sort by: ${current.label}`}
         className={cn(
-          'flex h-10 items-center gap-2 rounded-full bg-white pr-3 pl-4 text-sm ring-1 transition ring-inset',
+          'flex h-10 w-full items-center gap-1.5 rounded-full bg-white pr-2.5 pl-3.5 text-sm whitespace-nowrap ring-1 transition ring-inset sm:gap-2 sm:pr-3 sm:pl-4',
           open ? 'ring-2 ring-ink-800' : 'ring-mist hover:ring-ink-300',
         )}
       >
-        <CurrentIcon className="size-4 text-ink-500" aria-hidden />
-        <span className="text-ink-400">Sort:</span>
-        <span className="font-semibold text-ink-900">{current.label}</span>
+        <CurrentIcon className="size-4 shrink-0 text-ink-500" aria-hidden />
+        <span className="hidden text-ink-400 sm:inline">Sort:</span>
+        {/* Short label on phones keeps the button on one line. */}
+        <span className="min-w-0 flex-1 truncate text-left font-semibold text-ink-900 sm:hidden">
+          {current.shortLabel}
+        </span>
+        <span className="hidden font-semibold text-ink-900 sm:inline">{current.label}</span>
         <ChevronDown
           className={cn(
-            'size-4 text-ink-500 transition-transform duration-200',
+            'size-4 shrink-0 text-ink-500 transition-transform duration-200',
             open && 'rotate-180',
           )}
         />

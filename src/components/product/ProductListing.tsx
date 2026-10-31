@@ -69,7 +69,8 @@ export function ProductListing({ initialProducts }: { initialProducts: Product[]
             {total} {total === 1 ? 'product' : 'products'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        {/* Phones: Filters and Sort share the row as two equal buttons. */}
+        <div className="grid w-full grid-cols-2 items-center gap-2 sm:flex sm:w-auto">
           <Button
             variant="secondary"
             size="sm"

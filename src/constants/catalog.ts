@@ -138,13 +138,14 @@ export const OUT_OF_STOCK_PRODUCT_IDS = new Set([16]);
 /** "productId:optionId" pairs that are out of stock, to show disabled states. */
 export const OUT_OF_STOCK = new Set(['2:xxl', '3:s', '15:xl', '17:xxl', '5:silver', '14:3y']);
 
-export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'price-asc', label: 'Price: Low to High' },
-  { value: 'price-desc', label: 'Price: High to Low' },
-  { value: 'rating', label: 'Customer Rating' },
-  { value: 'discount', label: 'Biggest Discount' },
-  { value: 'newest', label: 'Newest First' },
+/** `shortLabel` is shown in the sort button on small screens so it stays on one line. */
+export const SORT_OPTIONS: { value: SortOption; label: string; shortLabel: string }[] = [
+  { value: 'featured', label: 'Featured', shortLabel: 'Featured' },
+  { value: 'price-asc', label: 'Price: Low to High', shortLabel: 'Low–High' },
+  { value: 'price-desc', label: 'Price: High to Low', shortLabel: 'High–Low' },
+  { value: 'rating', label: 'Customer Rating', shortLabel: 'Top rated' },
+  { value: 'discount', label: 'Biggest Discount', shortLabel: 'Discount' },
+  { value: 'newest', label: 'Newest First', shortLabel: 'Newest' },
 ];
 
 export const RATING_FILTERS = [4, 3, 2] as const;
