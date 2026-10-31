@@ -27,6 +27,7 @@ export function NavBar() {
   const [active, setActive] = useState<CategorySlug | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navRef = useRef<HTMLElement>(null);
+  const pointerType = useRef<string>('');
 
   const clearTimer = useCallback(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -107,9 +108,13 @@ export function NavBar() {
                 type="button"
                 aria-expanded={isActive}
                 aria-controls="mega-menu"
+                onPointerDown={(e) => (pointerType.current = e.pointerType)}
                 onClick={() => {
                   clearTimer();
-                  setActive(isActive ? null : category.slug);
+                  // A mouse click after hovering keeps the menu open; touch/keyboard toggle it.
+                  const keepOpen = pointerType.current === 'mouse';
+                  pointerType.current = '';
+                  setActive(isActive && !keepOpen ? null : category.slug);
                 }}
                 className={cn(
                   'relative flex h-12 items-center gap-1 px-3 text-sm font-semibold transition-colors',

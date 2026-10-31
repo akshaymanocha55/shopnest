@@ -7,8 +7,10 @@ import { generateId } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addAddress, selectAddresses } from '@/store/slices/addresses.slice';
 import { selectUser } from '@/store/slices/auth.slice';
+import { selectCartSummary } from '@/store/slices/cart.slice';
 import type { AddressFields } from '@/types/order';
 import { CheckboxRow } from '../product/filters/CheckboxRow';
+import { StickyActionBar } from '../common/StickyActionBar';
 import { Button } from '../ui/Button';
 import { AddressPicker } from './AddressPicker';
 
@@ -28,6 +30,7 @@ export function AddressStep({ initial, onContinue }: AddressStepProps) {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const addresses = useAppSelector(selectAddresses);
+  const summary = useAppSelector(selectCartSummary);
 
   const [shippingId, setShippingId] = useState<string | null>(
     initial?.shippingId ?? addresses[0]?.id ?? null,
@@ -85,21 +88,22 @@ export function AddressStep({ initial, onContinue }: AddressStepProps) {
         </div>
       )}
 
-      <Button
-        size="lg"
-        disabled={!canContinue}
-        className="w-full sm:w-auto"
-        onClick={() =>
-          canContinue &&
-          onContinue({
-            shippingId: shippingId!,
-            billingId: resolvedBilling!,
-            billingSameAsShipping: sameAsShipping,
-          })
-        }
-      >
-        Continue to payment
-      </Button>
+      <StickyActionBar total={summary.total}>
+        <Button
+          size="lg"
+          disabled={!canContinue}
+          onClick={() =>
+            canContinue &&
+            onContinue({
+              shippingId: shippingId!,
+              billingId: resolvedBilling!,
+              billingSameAsShipping: sameAsShipping,
+            })
+          }
+        >
+          Continue to payment
+        </Button>
+      </StickyActionBar>
       {!canContinue && (
         <p className="text-sm text-ink-500">
           {shippingId

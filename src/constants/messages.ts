@@ -12,6 +12,8 @@ export const TOAST = {
   maxQuantity: (max: number) => `You can add up to ${max} of this item`,
   selectVariant: (name: string) => `Please select a ${name.toLowerCase()}`,
   outOfStock: 'This option is out of stock',
+  productOutOfStock: 'Sorry, this product is out of stock',
+  notifyMe: 'We’ll let you know as soon as it’s back in stock',
   orderPlaced: 'Order placed successfully!',
   orderCancelled: 'Order cancelled',
   profileUpdated: 'Profile updated',

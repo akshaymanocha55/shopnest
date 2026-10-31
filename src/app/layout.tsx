@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import { LoginPromptHost } from '@/components/auth/LoginPromptHost';
+import { LogoutConfirmHost } from '@/components/auth/LogoutConfirmHost';
+import { ScrollToTop } from '@/components/common/ScrollToTop';
 import { BackToTop } from '@/components/layout/BackToTop';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
@@ -71,6 +73,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <Footer />
           <BackToTop />
           <LoginPromptHost />
+          <LogoutConfirmHost />
+          {/* usePathname is request data, so it streams in behind a Suspense boundary. */}
+          <Suspense fallback={null}>
+            <ScrollToTop />
+          </Suspense>
         </AppProviders>
         <JsonLd data={organizationJsonLd()} />
       </body>

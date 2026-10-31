@@ -9,6 +9,7 @@ import type { Product } from '@/types/product';
 import { Price } from '../ui/Price';
 import { Rating } from '../ui/Rating';
 import { AddToCartButton } from './AddToCartButton';
+import { NotifyMeButton } from './NotifyMeButton';
 import { WishlistButton } from './WishlistButton';
 
 interface ProductCardProps {
@@ -47,9 +48,17 @@ export const ProductCard = memo(function ProductCard({
             sizes="(min-width: 1280px) 280px, (min-width: 768px) 30vw, 50vw"
             loading={priority ? 'eager' : 'lazy'}
             fetchPriority={priority ? 'high' : undefined}
-            className="object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-105"
+            className={cn(
+              'object-contain p-6 mix-blend-multiply transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-105',
+              !product.inStock && 'opacity-50 grayscale',
+            )}
           />
-          {product.discountPercent >= 30 && (
+          {!product.inStock ? (
+            <span className="absolute inset-x-3 bottom-3 rounded-full bg-ink-900/85 py-1.5 text-center text-xs font-semibold text-white backdrop-blur">
+              Out of stock
+            </span>
+          ) : null}
+          {product.inStock && product.discountPercent >= 30 && (
             <span className="absolute top-3 left-3 rounded-full bg-marigold-400 px-2.5 py-1 text-xs font-bold text-ink-900">
               {product.discountPercent}% off
             </span>
@@ -71,7 +80,11 @@ export const ProductCard = memo(function ProductCard({
         <Rating value={product.rating} count={product.ratingCount} />
         <Price price={product.price} mrp={product.mrp} size="sm" className="mt-auto pt-1" />
         {/* z-10 keeps the button clickable above the stretched card link */}
-        <AddToCartButton product={product} size="sm" fullWidth className="relative z-10 mt-1" />
+        {product.inStock ? (
+          <AddToCartButton product={product} size="sm" fullWidth className="relative z-10 mt-1" />
+        ) : (
+          <NotifyMeButton size="sm" fullWidth className="relative z-10 mt-1" />
+        )}
       </div>
     </article>
   );

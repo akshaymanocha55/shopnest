@@ -24,12 +24,12 @@ export function DealsBand({ products }: { products: Product[] }) {
             See all deals
           </Link>
         </div>
-        <ul className="no-scrollbar -mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 lg:mx-0 lg:grid lg:grid-cols-4 lg:px-0">
+        <ul className="no-scrollbar -mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pt-2 pb-2 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
           {products.map((product) => (
             <li key={product.id} className="w-[72%] shrink-0 snap-start sm:w-[45%] lg:w-auto">
               <Link
                 href={ROUTES.product(product.slug)}
-                className="group flex h-full flex-col rounded-[var(--radius-card)] bg-ink-700 p-3 ring-1 ring-ink-600 transition hover:ring-marigold-400"
+                className="group flex h-full flex-col rounded-[var(--radius-card)] bg-ink-700 p-3 ring-2 ring-ink-600 transition-[box-shadow,transform] duration-200 ring-inset hover:-translate-y-1 hover:ring-marigold-400 focus-visible:ring-marigold-400"
               >
                 <span className="relative block aspect-[4/3] overflow-hidden rounded-2xl bg-white">
                   <Image

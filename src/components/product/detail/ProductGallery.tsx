@@ -19,7 +19,15 @@ const VIEWS: GalleryView[] = [
 ];
 
 /** Image gallery with thumbnails and hover-to-zoom on desktop. */
-export function ProductGallery({ image, title }: { image: string; title: string }) {
+export function ProductGallery({
+  image,
+  title,
+  inStock = true,
+}: {
+  image: string;
+  title: string;
+  inStock?: boolean;
+}) {
   const [active, setActive] = useState(0);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
@@ -75,16 +83,25 @@ export function ProductGallery({ image, title }: { image: string; title: string 
           fill
           preload
           sizes="(min-width: 1024px) 560px, 100vw"
-          className="animate-fade-in object-contain p-10 transition-transform duration-300 ease-out"
+          className={cn(
+            'animate-fade-in object-contain p-10 transition-transform duration-300 ease-out',
+            !inStock && 'opacity-60 grayscale',
+          )}
           style={
             zoom
               ? { transform: 'scale(2)', transformOrigin: `${zoom.x}% ${zoom.y}%` }
               : { transform: `scale(${view.scale})`, transformOrigin: view.origin }
           }
         />
-        <span className="pointer-events-none absolute bottom-4 left-1/2 hidden -translate-x-1/2 rounded-full bg-ink-900/70 px-3 py-1 text-xs font-medium text-white md:block">
-          Hover to zoom
-        </span>
+        {inStock ? (
+          <span className="pointer-events-none absolute bottom-4 left-1/2 hidden -translate-x-1/2 rounded-full bg-ink-900/70 px-3 py-1 text-xs font-medium text-white md:block">
+            Hover to zoom
+          </span>
+        ) : (
+          <span className="pointer-events-none absolute top-4 left-4 rounded-full bg-ink-900/85 px-3 py-1.5 text-xs font-semibold text-white">
+            Out of stock
+          </span>
+        )}
       </div>
     </div>
   );

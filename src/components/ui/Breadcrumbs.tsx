@@ -6,24 +6,33 @@ export interface Crumb {
   href?: string;
 }
 
+/** Always one line: earlier crumbs keep their size, the last one shrinks and ends with "…". */
 export function Breadcrumbs({ items }: { items: Crumb[] }) {
   return (
-    <nav aria-label="Breadcrumb">
-      <ol className="flex flex-wrap items-center gap-1 text-sm text-ink-400">
-        {items.map((item, index) => (
-          <li key={item.label} className="flex items-center gap-1">
-            {index > 0 && <ChevronRight className="size-3.5" aria-hidden />}
-            {item.href ? (
-              <Link href={item.href} className="transition hover:text-ink-800">
-                {item.label}
-              </Link>
-            ) : (
-              <span aria-current="page" className="line-clamp-1 max-w-[40ch] text-ink-600">
-                {item.label}
-              </span>
-            )}
-          </li>
-        ))}
+    <nav aria-label="Breadcrumb" className="min-w-0">
+      <ol className="flex min-w-0 items-center gap-1 text-sm whitespace-nowrap text-ink-400">
+        {items.map((item, index) => {
+          const last = index === items.length - 1;
+          return (
+            <li
+              key={item.label}
+              className={
+                last ? 'flex min-w-0 items-center gap-1' : 'flex shrink-0 items-center gap-1'
+              }
+            >
+              {index > 0 && <ChevronRight className="size-3.5 shrink-0" aria-hidden />}
+              {item.href && !last ? (
+                <Link href={item.href} className="transition hover:text-ink-800">
+                  {item.label}
+                </Link>
+              ) : (
+                <span aria-current="page" title={item.label} className="truncate text-ink-600">
+                  {item.label}
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );

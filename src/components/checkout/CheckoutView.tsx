@@ -18,6 +18,7 @@ import { clearCart, selectCartItems, selectCartSummary } from '@/store/slices/ca
 import { addOrder } from '@/store/slices/orders.slice';
 import type { PaymentMethod } from '@/types/order';
 import { CouponBox } from '../cart/CouponBox';
+import { StickyActionBar } from '../common/StickyActionBar';
 import { OrderSummary } from '../cart/OrderSummary';
 import { Button } from '../ui/Button';
 import { ButtonLink } from '../ui/ButtonLink';
@@ -118,8 +119,8 @@ export function CheckoutView() {
   };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
-      <div className="space-y-5">
+    <div className="grid gap-6 pb-24 lg:grid-cols-[1fr_380px] lg:gap-8 lg:pb-0">
+      <div className="min-w-0 space-y-5">
         <CheckoutSteps current={step} />
 
         {step === 0 ? (
@@ -152,9 +153,13 @@ export function CheckoutView() {
         {step === 1 && (
           <StepCard title="Payment method">
             <PaymentOptions value={payment} onChange={setPayment} />
-            <Button size="lg" className="mt-6 w-full sm:w-auto" onClick={() => setStep(2)}>
-              Review order
-            </Button>
+            <div className="mt-6">
+              <StickyActionBar total={summary.total}>
+                <Button size="lg" onClick={() => setStep(2)}>
+                  Review order
+                </Button>
+              </StickyActionBar>
+            </div>
           </StepCard>
         )}
 
@@ -209,7 +214,7 @@ export function CheckoutView() {
             <Button
               size="lg"
               variant="accent"
-              fullWidth
+              className="hidden w-full lg:flex"
               loading={placeOrder.isPending}
               disabled={placeOrder.isSuccess}
               onClick={submitOrder}
@@ -223,6 +228,20 @@ export function CheckoutView() {
           )}
         </OrderSummary>
       </aside>
+
+      {step === 2 && (
+        <StickyActionBar total={summary.total} caption="To pay" desktop="hidden">
+          <Button
+            size="lg"
+            variant="accent"
+            loading={placeOrder.isPending}
+            disabled={placeOrder.isSuccess}
+            onClick={submitOrder}
+          >
+            Place order
+          </Button>
+        </StickyActionBar>
+      )}
     </div>
   );
 }

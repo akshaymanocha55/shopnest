@@ -36,12 +36,18 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         if (event.target === event.currentTarget) onClose();
       }}
       className={cn(
-        'm-auto w-[calc(100%-2rem)] max-w-md overflow-visible rounded-[1.75rem] bg-white p-0 text-ink-800 shadow-pop backdrop:bg-ink-900/50 backdrop:backdrop-blur-sm open:animate-pop-in',
+        // Mobile: bottom sheet. Desktop: centred card.
+        'mx-auto mt-auto mb-0 w-full max-w-none overflow-visible rounded-t-[1.75rem] bg-white p-0 pb-[env(safe-area-inset-bottom)] text-ink-800 shadow-pop backdrop:bg-ink-900/50 backdrop:backdrop-blur-sm open:animate-[rise_0.35s_var(--ease-out-expo)_both]',
+        'sm:m-auto sm:w-[calc(100%-2rem)] sm:max-w-md sm:rounded-[1.75rem] sm:pb-0 sm:open:animate-pop-in',
         className,
       )}
     >
       {open && (
-        <div className="relative p-7">
+        <div className="relative p-6 sm:p-7">
+          <span
+            className="mx-auto mb-4 block h-1.5 w-10 rounded-full bg-mist sm:hidden"
+            aria-hidden
+          />
           <button
             type="button"
             onClick={onClose}

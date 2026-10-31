@@ -3,15 +3,14 @@
 import { Heart, LogOut, MapPinned, Package, UserRound } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
-import { ROUTES, TOAST } from '@/constants';
+import { ROUTES } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectUser } from '@/store/slices/auth.slice';
 import { selectAddressCount } from '@/store/slices/addresses.slice';
 import { selectOrderCount } from '@/store/slices/orders.slice';
 import { selectWishlistCount } from '@/store/slices/wishlist.slice';
-import { endUserSession } from '@/store/thunks';
+import { openLogoutConfirm } from '@/store/slices/ui.slice';
 import { Button } from '../ui/Button';
 import { AddressBook } from './AddressBook';
 import { OrderHistory } from './OrderHistory';
@@ -53,11 +52,7 @@ export function AccountView() {
     [router],
   );
 
-  const logout = useCallback(async () => {
-    await dispatch(endUserSession());
-    toast.success(TOAST.logout);
-    router.replace(ROUTES.home);
-  }, [dispatch, router]);
+  const logout = useCallback(() => dispatch(openLogoutConfirm()), [dispatch]);
 
   if (!user) return null;
 

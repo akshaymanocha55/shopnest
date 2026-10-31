@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
+import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { memo } from 'react';
@@ -30,12 +31,13 @@ export const OrderRow = memo(function OrderRow({ orderId }: { orderId: string })
   const cancelled = order.status === 'cancelled';
 
   return (
-    <article className="rounded-2xl bg-white p-5 ring-1 ring-mist">
+    // The whole card opens the order details page (stretched link); Cancel stays clickable above it.
+    <article className="group relative rounded-2xl bg-white p-5 ring-1 ring-mist transition hover:shadow-lift hover:ring-ink-200">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <Link
-            href={ROUTES.orderConfirmation(order.id)}
-            className="font-semibold text-ink-900 hover:underline"
+            href={ROUTES.orderDetails(order.id)}
+            className="font-semibold text-ink-900 group-hover:underline after:absolute after:inset-0 after:rounded-2xl after:content-['']"
           >
             Order #{order.id}
           </Link>
@@ -76,13 +78,16 @@ export const OrderRow = memo(function OrderRow({ orderId }: { orderId: string })
           <span className="font-display text-lg font-bold tabular-nums">
             {formatPrice(order.summary.total)}
           </span>
+          <span className="hidden items-center gap-0.5 text-sm font-semibold text-ink-500 transition group-hover:text-ink-900 sm:flex">
+            View details <ChevronRight className="size-4" />
+          </span>
           {!cancelled && (
             <Button
               variant="ghost"
               size="sm"
               loading={cancel.isPending}
               onClick={() => cancel.mutate()}
-              className="text-rose-600 hover:bg-rose-50"
+              className="relative z-10 text-rose-600 hover:bg-rose-50"
             >
               Cancel
             </Button>

@@ -2,6 +2,7 @@ import {
   CATEGORY_BY_API_NAME,
   DISCOUNT_STEPS,
   OUT_OF_STOCK,
+  OUT_OF_STOCK_PRODUCT_IDS,
   SUBCATEGORY_BY_PRODUCT_ID,
   USD_TO_INR,
   VARIANT_OVERRIDES,
@@ -48,6 +49,7 @@ export function mapProduct(raw: ApiProduct): Product {
     discountPercent: Math.round(((mrp - price) / mrp) * 100),
     rating: raw.rating.rate,
     ratingCount: raw.rating.count,
+    inStock: !OUT_OF_STOCK_PRODUCT_IDS.has(raw.id),
     variantGroups: buildVariants(raw, VARIANT_TEMPLATES[category.slug]),
   };
 }

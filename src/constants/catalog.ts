@@ -132,6 +132,9 @@ export const VARIANT_OVERRIDES: Record<number, VariantGroup[]> = {
   ],
 };
 
+/** Whole products that are sold out (shows the out-of-stock UI on PLP, PDP and wishlist). */
+export const OUT_OF_STOCK_PRODUCT_IDS = new Set([16]);
+
 /** "productId:optionId" pairs that are out of stock, to show disabled states. */
 export const OUT_OF_STOCK = new Set(['2:xxl', '3:s', '15:xl', '17:xxl', '5:silver', '14:3y']);
 
@@ -161,6 +164,7 @@ export const FILTER_PARAMS = {
   minPrice: 'min',
   maxPrice: 'max',
   rating: 'rating',
+  inStock: 'instock',
   sort: 'sort',
 } as const;
 

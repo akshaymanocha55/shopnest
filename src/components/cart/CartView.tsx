@@ -5,6 +5,7 @@ import { ROUTES } from '@/constants';
 import { useAppSelector } from '@/store/hooks';
 import { selectCartLineIds, selectCartSummary } from '@/store/slices/cart.slice';
 import { ErrorBoundary } from '../common/ErrorBoundary';
+import { StickyActionBar } from '../common/StickyActionBar';
 import { ButtonLink } from '../ui/ButtonLink';
 import { EmptyState } from '../ui/EmptyState';
 import { CartLine } from './CartLine';
@@ -20,7 +21,7 @@ export function CartView() {
   const summary = useAppSelector(selectCartSummary);
 
   return (
-    <div className="space-y-14">
+    <div className="space-y-14 pb-24 lg:pb-0">
       {lineIds.length === 0 ? (
         <div className="space-y-6">
           <EmptyState
@@ -57,7 +58,7 @@ export function CartView() {
           <aside className="space-y-5 lg:sticky lg:top-36 lg:self-start">
             <CouponBox />
             <OrderSummary summary={summary}>
-              <ButtonLink href={ROUTES.checkout} size="lg" className="w-full">
+              <ButtonLink href={ROUTES.checkout} size="lg" className="hidden w-full lg:flex">
                 Go to checkout
               </ButtonLink>
               <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-400">
@@ -65,6 +66,11 @@ export function CartView() {
               </p>
             </OrderSummary>
           </aside>
+          <StickyActionBar total={summary.total} desktop="hidden">
+            <ButtonLink href={ROUTES.checkout} size="lg">
+              Go to checkout
+            </ButtonLink>
+          </StickyActionBar>
         </div>
       )}
 

@@ -60,16 +60,26 @@ async function ProductDetail({ slug }: { slug: string }) {
     <div className="container-page pt-6 pb-28 md:pb-10">
       <Breadcrumbs items={crumbs} />
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
-        <ProductGallery image={product.image} title={product.title} />
+      <div className="mt-5 grid items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
+        {/* The gallery stays in view while the buying options scroll (desktop). */}
+        <div className="lg:sticky-below-header">
+          <ProductGallery image={product.image} title={product.title} inStock={product.inStock} />
+        </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-6">
           <div>
-            <p className="text-sm font-semibold text-marigold-600">{product.subcategory}</p>
-            <h1 className="mt-2 text-3xl leading-tight font-bold text-ink-900 sm:text-4xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-marigold-50 px-2.5 py-1 text-xs font-semibold text-marigold-600">
+                {product.subcategory}
+              </span>
+              <span className="text-xs text-ink-400">{product.categoryLabel}</span>
+            </div>
+            <h1 className="mt-3 text-2xl leading-tight font-bold text-ink-900 sm:text-3xl xl:text-4xl">
               {product.title}
             </h1>
-            <Rating value={product.rating} count={product.ratingCount} size="md" className="mt-3" />
+            <a href="#reviews-heading" className="mt-3 inline-flex hover:opacity-80">
+              <Rating value={product.rating} count={product.ratingCount} size="md" />
+            </a>
           </div>
           <PurchasePanel product={product} />
         </div>

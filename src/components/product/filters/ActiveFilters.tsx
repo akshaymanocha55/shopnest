@@ -45,6 +45,12 @@ export const ActiveFilters = memo(function ActiveFilters({
       label: priceLabel(filters.minPrice, filters.maxPrice),
       remove: () => onChange({ minPrice: null, maxPrice: null }),
     });
+  if (filters.inStockOnly)
+    chips.push({
+      key: 'stock',
+      label: 'In stock only',
+      remove: () => onChange({ inStockOnly: false }),
+    });
   if (filters.minRating != null)
     chips.push({
       key: 'rating',

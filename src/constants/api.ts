@@ -15,6 +15,11 @@ export const LOCATION_ENDPOINTS = {
   cities: '/countries/cities',
 } as const;
 
+/** India Post pincode API (relative to NEXT_PUBLIC_PINCODE_API_BASE_URL). */
+export const PINCODE_ENDPOINTS = {
+  lookup: (pincode: string) => `/pincode/${pincode}`,
+} as const;
+
 export const HTTP_STATUS = {
   unauthorized: 401,
   notFound: 404,

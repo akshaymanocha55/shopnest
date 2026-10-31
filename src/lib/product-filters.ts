@@ -8,6 +8,7 @@ export const DEFAULT_FILTERS: ProductFilters = {
   minPrice: null,
   maxPrice: null,
   minRating: null,
+  inStockOnly: false,
   sort: 'featured',
 };
 
@@ -36,6 +37,7 @@ export function parseFilters(params: ParamReader): ProductFilters {
     minPrice: toNumber(params.get(FILTER_PARAMS.minPrice)),
     maxPrice: toNumber(params.get(FILTER_PARAMS.maxPrice)),
     minRating: toNumber(params.get(FILTER_PARAMS.rating)),
+    inStockOnly: params.get(FILTER_PARAMS.inStock) === '1',
     sort: VALID_SORTS.has(sort) ? (sort as SortOption) : 'featured',
   };
 }
@@ -49,6 +51,7 @@ export function filtersToSearchParams(filters: ProductFilters): URLSearchParams 
   if (filters.minPrice != null) params.set(FILTER_PARAMS.minPrice, String(filters.minPrice));
   if (filters.maxPrice != null) params.set(FILTER_PARAMS.maxPrice, String(filters.maxPrice));
   if (filters.minRating != null) params.set(FILTER_PARAMS.rating, String(filters.minRating));
+  if (filters.inStockOnly) params.set(FILTER_PARAMS.inStock, '1');
   if (filters.sort !== 'featured') params.set(FILTER_PARAMS.sort, filters.sort);
   return params;
 }
@@ -58,7 +61,8 @@ export function countActiveFilters(filters: ProductFilters): number {
     filters.categories.length +
     (filters.sub ? 1 : 0) +
     (filters.minPrice != null || filters.maxPrice != null ? 1 : 0) +
-    (filters.minRating != null ? 1 : 0)
+    (filters.minRating != null ? 1 : 0) +
+    (filters.inStockOnly ? 1 : 0)
   );
 }
 
@@ -85,15 +89,20 @@ const sorters: Record<SortOption, (a: Product, b: Product) => number> = {
 /** Pure function: apply search, filters and sorting. Easy to unit-test and memoise. */
 export function applyFilters(products: Product[], filters: ProductFilters): Product[] {
   const categories = new Set(filters.categories);
-  return products
-    .filter(
-      (p) =>
-        (categories.size === 0 || categories.has(p.category)) &&
-        (!filters.sub || p.subcategory === filters.sub) &&
-        (filters.minPrice == null || p.price >= filters.minPrice) &&
-        (filters.maxPrice == null || p.price <= filters.maxPrice) &&
-        (filters.minRating == null || p.rating >= filters.minRating) &&
-        matchesQuery(p, filters.q),
-    )
-    .sort(sorters[filters.sort]);
+  return (
+    products
+      .filter(
+        (p) =>
+          (categories.size === 0 || categories.has(p.category)) &&
+          (!filters.sub || p.subcategory === filters.sub) &&
+          (filters.minPrice == null || p.price >= filters.minPrice) &&
+          (filters.maxPrice == null || p.price <= filters.maxPrice) &&
+          (filters.minRating == null || p.rating >= filters.minRating) &&
+          (!filters.inStockOnly || p.inStock) &&
+          matchesQuery(p, filters.q),
+      )
+      .sort(sorters[filters.sort])
+      // Sold-out items always go to the end (sort is stable, so order is otherwise kept).
+      .sort((a, b) => Number(b.inStock) - Number(a.inStock))
+  );
 }

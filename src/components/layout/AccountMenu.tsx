@@ -2,14 +2,12 @@
 
 import { ChevronDown, Heart, LogOut, MapPinned, Package, UserRound } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { ROUTES, TOAST } from '@/constants';
+import { ROUTES } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectUserFirstName } from '@/store/slices/auth.slice';
-import { endUserSession } from '@/store/thunks';
+import { openLogoutConfirm } from '@/store/slices/ui.slice';
 
 const LINKS = [
   { href: ROUTES.account, label: 'My profile', icon: UserRound },
@@ -21,11 +19,11 @@ const LINKS = [
 /** Logged-in user's dropdown in the header. Opens on hover (desktop) or click (touch/keyboard). */
 export function AccountMenu() {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const firstName = useAppSelector(selectUserFirstName);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pointerType = useRef<string>('');
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -50,11 +48,9 @@ export function AccountMenu() {
     [],
   );
 
-  const logout = async () => {
+  const logout = () => {
     close();
-    await dispatch(endUserSession());
-    toast.success(TOAST.logout);
-    router.replace(ROUTES.home);
+    dispatch(openLogoutConfirm());
   };
 
   return (
@@ -75,7 +71,10 @@ export function AccountMenu() {
         type="button"
         aria-expanded={open}
         aria-haspopup="menu"
-        onClick={() => setOpen((v) => !v)}
+        onPointerDown={(e) => (pointerType.current = e.pointerType)}
+        // Mouse users already opened it by hovering, so a click keeps it open; touch and
+        // keyboard users toggle it.
+        onClick={() => (pointerType.current === 'mouse' ? setOpen(true) : setOpen((v) => !v))}
         className="flex h-11 items-center gap-2 rounded-full pr-2 pl-1.5 text-sm font-semibold text-ink-800 transition hover:bg-ink-50"
       >
         <span className="grid size-8 place-items-center rounded-full bg-marigold-100 text-ink-800">

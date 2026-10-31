@@ -39,6 +39,10 @@ export const LIMITS = {
   maxQuantityPerItem: 10,
   searchSuggestions: 6,
   relatedProducts: 8,
-  /** Lists longer than this switch to a virtualized renderer. */
+  /** Lists longer than this switch to a virtualized renderer (home, related, wishlist grids). */
   virtualizeThreshold: 40,
+  /** Products per infinite-scroll page on the PLP. */
+  pageSize: 8,
+  /** Simulated latency for the mock paginated endpoint, so the loader is visible. */
+  pageLoadDelayMs: 450,
 } as const;

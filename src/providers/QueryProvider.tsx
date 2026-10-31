@@ -1,17 +1,10 @@
 'use client';
 
 import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { CACHE } from '@/constants';
 import { getErrorMessage, isApiError } from '@/lib/errors';
-
-// Devtools are loaded lazily and only in development, so they never ship to users.
-const ReactQueryDevtools =
-  process.env.NODE_ENV === 'development'
-    ? dynamic(() => import('@tanstack/react-query-devtools').then((m) => m.ReactQueryDevtools))
-    : () => null;
 
 function createQueryClient() {
   return new QueryClient({
@@ -44,10 +37,5 @@ function getQueryClient() {
 }
 
 export function QueryProvider({ children }: { children: ReactNode }) {
-  return (
-    <QueryClientProvider client={getQueryClient()}>
-      {children}
-      <ReactQueryDevtools buttonPosition="bottom-left" />
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={getQueryClient()}>{children}</QueryClientProvider>;
 }

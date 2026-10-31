@@ -9,19 +9,19 @@ A responsive e-commerce storefront built with **Next.js 16 (App Router)**, **Rea
 
 ## Features
 
-| Area                  | What's included                                                                                                                                                                                                                                    |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Home                  | Hero with a load animation, shop-by-category tiles, customer favourites, deals band                                                                                                                                                                |
-| Product listing (PLP) | Search, multi-category filter, sub-category, price presets and custom range, rating filter, 6 sort options. All state lives in the URL (shareable, back button works). Filter counts, active-filter chips, mobile filter sheet, "no results" state |
-| Product detail (PDP)  | Image gallery with hover zoom, variants (size / finish / warranty with price changes and out-of-stock options), quantity, Add to cart, Buy now, delivery estimate, similar products                                                                |
-| Header                | Debounced live search with suggestions and keyboard navigation, desktop mega menu, mobile drawer, cart badge, hide-on-scroll (throttled)                                                                                                           |
-| Auth                  | Login and signup with mobile + OTP, form validation, resend timer, access + refresh tokens with automatic refresh                                                                                                                                  |
-| Guest rules           | Guests can see prices and the Add to cart button. Clicking it opens a **login popup**; the item is remembered and added right after login. Cart, checkout, order confirmation and My Account are protected                                         |
-| Cart                  | Quantity updates, remove with undo, price breakdown, free-delivery progress bar, empty state                                                                                                                                                       |
-| Checkout              | 3 steps (address, payment, review) with validation, order placed via `POST /carts`                                                                                                                                                                 |
-| Order confirmation    | Animated confirmation, delivery date, items and payment summary                                                                                                                                                                                    |
-| My Account            | Profile view/edit (`PUT /users/:id`), virtualized order history, cancel order (`DELETE /carts/:id`), log out                                                                                                                                       |
-| States                | Skeletons for every async view, error boundaries per section and per route, toasts on every action, empty states, 404 page                                                                                                                         |
+| Area                  | What's included                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Home                  | Hero with a load animation, shop-by-category tiles, customer favourites, deals band                                                                                                                                                                                                                                                                                |
+| Product listing (PLP) | Search, multi-category filter, type, **dual-handle price slider** + presets, rating, **in-stock toggle**, custom **sort menu** (keyboard accessible). State lives in the URL. **Infinite scroll (8 per page) + window virtualization**, filter counts, active-filter chips, sticky filter sidebar that follows the header, mobile filter sheet, "no results" state |
+| Product detail (PDP)  | Image gallery with hover zoom, variants (size / finish / warranty with price changes and out-of-stock options), quantity, Add to cart, Buy now, delivery estimate, similar products                                                                                                                                                                                |
+| Header                | Debounced live search with suggestions and keyboard navigation, desktop mega menu, mobile drawer, cart badge, hide-on-scroll (throttled)                                                                                                                                                                                                                           |
+| Auth                  | Login and signup with mobile + OTP, form validation, resend timer, access + refresh tokens with automatic refresh                                                                                                                                                                                                                                                  |
+| Guest rules           | Guests can see prices and the Add to cart button. Clicking it opens a **login popup**; the item is remembered and added right after login. Cart, checkout, order confirmation and My Account are protected                                                                                                                                                         |
+| Cart                  | Quantity updates, remove with undo, price breakdown, free-delivery progress bar, empty state                                                                                                                                                                                                                                                                       |
+| Checkout              | 3 steps (address, payment, review) with validation, order placed via `POST /carts`                                                                                                                                                                                                                                                                                 |
+| Order confirmation    | Animated confirmation, delivery date, items and payment summary                                                                                                                                                                                                                                                                                                    |
+| My Account            | Profile view/edit (`PUT /users/:id`), virtualized order history, cancel order (`DELETE /carts/:id`), log out                                                                                                                                                                                                                                                       |
+| States                | Skeletons for every async view, error boundaries per section and per route, toasts on every action, empty states, 404 page                                                                                                                                                                                                                                         |
 
 ## Tech stack
 
@@ -32,7 +32,7 @@ A responsive e-commerce storefront built with **Next.js 16 (App Router)**, **Rea
 - **Forms:** React Hook Form + Zod
 - **Lists:** TanStack Virtual
 - **Toasts:** Sonner · **Icons:** Lucide
-- **Testing:** Jest + React Testing Library (105 tests)
+- **Testing:** Jest + React Testing Library (117 tests)
 - **Quality:** ESLint (Next.js + React Hooks/Compiler rules) + Prettier (with Tailwind class sorting)
 - **CI/CD:** GitHub Actions (lint, format, type-check, test, build, deploy to Vercel)
 
@@ -154,7 +154,8 @@ FakeStore has no OTP, no persistent signup and no refresh tokens, so `services/a
 - **Re-renders:** `React.memo` on cards, rows, chips and filter panels; `useCallback`/`useMemo` where a memoised child or expensive computation needs it (not everywhere); `useAppStore` in the add-to-cart hook reads state at click time instead of subscribing.
 - **Debounce:** search input (300 ms), custom price range (500 ms), cart persistence.
 - **Throttle:** scroll handling (header, back-to-top) and Add to cart clicks.
-- **Virtualization:** order history always; the product grid switches to a row-virtualized window list above 40 items. FakeStore has only 20 products, and a fully rendered grid is better for SEO at that size.
+- **Infinite scroll + virtualization (PLP):** `useInfiniteQuery` loads 8 products per page; the next page is requested when the virtualizer reaches the last loaded rows (a "Load more" button remains as a fallback). `useWindowVirtualizer` keeps only the visible rows in the DOM, so the page stays light however many products are loaded. The first page is server-rendered for SEO/LCP. FakeStore has no pagination, so `productQueries.pages()` acts as a mock paginated endpoint over the cached catalogue; with a real API only its `queryFn` changes.
+- **Virtualization elsewhere:** order history is always virtualized.
 - **Resilience:** if FakeStore is unreachable, the app falls back to a bundled snapshot of the catalogue, so the store never shows a blank page.
 
 ### SEO
@@ -164,6 +165,15 @@ FakeStore has no OTP, no persistent signup and no refresh tokens, so `services/a
 - **JSON-LD:** Organization + WebSite (with SearchAction) site-wide, ItemList on home and PLP, Product (Offer + AggregateRating) and BreadcrumbList on PDPs.
 - `sitemap.xml` (home, listing, categories, every product with image) and `robots.txt` (private routes disallowed) are generated by `app/sitemap.ts` and `app/robots.ts`.
 - Cart, checkout, account, order and auth pages are `noindex`.
+
+### Delivery estimates
+
+- Pincode check on the PDP and cart: India Post's public API returns the area name, and a rule table (`constants/delivery.ts`) gives delivery days: 2-day express for metro pincodes, 3 days standard, 6 days for remote areas, and army postal pincodes are not deliverable.
+- International delivery uses country + city from the countries API.
+
+### Scroll behaviour
+
+- Next.js 16 keeps the scroll position when the new page is already visible. `ScrollToTop` resets it to the top on every new page, but not on back/forward, where the browser restores the previous position.
 
 ### Hydration safety
 
@@ -188,7 +198,7 @@ FakeStore has no OTP, no persistent signup and no refresh tokens, so `services/a
 npm test
 ```
 
-105 tests cover coupons (percent cap, flat, free shipping, minimum order), wishlist/address/coupon store logic, the review distribution, the countries API service (including fallback), filters and sorting, pricing and totals, AES encryption, JWT signing/expiry/tampering, validation schemas, the cart slice and memoised selectors, the mock auth flow, the API client (headers, methods, 401 refresh-and-retry, retries, error mapping), the debounce/throttle hooks and UI components (Button, QuantityStepper, Price, EmptyState, OtpInput).
+117 tests cover infinite-scroll paging, stock rules, delivery rules, order tracking, coupons (percent cap, flat, free shipping, minimum order), wishlist/address/coupon store logic, the review distribution, the countries API service (including fallback), filters and sorting, pricing and totals, AES encryption, JWT signing/expiry/tampering, validation schemas, the cart slice and memoised selectors, the mock auth flow, the API client (headers, methods, 401 refresh-and-retry, retries, error mapping), the debounce/throttle hooks and UI components (Button, QuantityStepper, Price, EmptyState, OtpInput).
 
 ## CI/CD
 
@@ -202,7 +212,7 @@ npm test
 
 1. Push this repo to GitHub.
 2. In Vercel, choose **Add New → Project** and import the repo (the framework is detected automatically).
-3. Add the five environment variables from `.env.example`. Set `NEXT_PUBLIC_SITE_URL` to your Vercel URL, e.g. `https://shopnest.vercel.app`.
+3. Add the environment variables from `.env.example`. Set `NEXT_PUBLIC_SITE_URL` to your Vercel URL, e.g. `https://shopnest.vercel.app`.
 4. Deploy. Every push to `main` redeploys automatically.
 
 ## What I'd do with more time

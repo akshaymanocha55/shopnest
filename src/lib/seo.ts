@@ -116,7 +116,9 @@ export function productJsonLd(product: Product) {
       price: product.price,
       // Static date: reading the clock during prerender would make the page dynamic.
       priceValidUntil: '2027-12-31',
-      availability: 'https://schema.org/InStock',
+      availability: product.inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
       itemCondition: 'https://schema.org/NewCondition',
       seller: { '@id': absoluteUrl('/#organization') },
     },

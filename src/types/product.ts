@@ -40,6 +40,7 @@ export interface Product {
   discountPercent: number;
   rating: number;
   ratingCount: number;
+  inStock: boolean;
   variantGroups: VariantGroup[];
 }
 
@@ -52,5 +53,6 @@ export interface ProductFilters {
   minPrice: number | null;
   maxPrice: number | null;
   minRating: number | null;
+  inStockOnly: boolean;
   sort: SortOption;
 }

@@ -9,6 +9,7 @@ export const ROUTES = {
   orderConfirmation: (orderId: string) => `/order-confirmation/${orderId}`,
   account: '/account',
   accountOrders: '/account?tab=orders',
+  orderDetails: (orderId: string) => `/account/orders/${orderId}`,
 } as const;
 
 /** Routes only logged-in users may open. Enforced in src/proxy.ts. */

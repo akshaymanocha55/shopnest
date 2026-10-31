@@ -1,12 +1,12 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { PackageSearch, SlidersHorizontal } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useCallback, useDeferredValue, useMemo, useState } from 'react';
 import { CATEGORY_BY_SLUG } from '@/constants';
 import { useProductFilters } from '@/hooks/useProductFilters';
-import { applyFilters, countActiveFilters } from '@/lib/product-filters';
+import { countActiveFilters } from '@/lib/product-filters';
 import { cn } from '@/lib/utils';
 import { productQueries } from '@/services/queries/product.queries';
 import type { Product, ProductFilters, SortOption } from '@/types/product';
@@ -16,7 +16,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { ActiveFilters } from './filters/ActiveFilters';
 import { FiltersPanel } from './filters/FiltersPanel';
 import { SortSelect } from './filters/SortSelect';
-import { ProductGrid } from './ProductGrid';
+import { InfiniteProductGrid } from './InfiniteProductGrid';
 
 const MobileFiltersSheet = dynamic(() => import('./filters/MobileFiltersSheet'), { ssr: false });
 
@@ -28,31 +28,35 @@ function headingFor(filters: ProductFilters): string {
 }
 
 /**
- * Product listing: search, filters and sort, all driven by URL params.
- * Server-rendered data seeds the TanStack Query cache (`initialData`) so there is no loading
- * flash, and filtering is a memoised pure function over the cached list.
+ * Product listing: search, filters and sort live in the URL; results load page by page
+ * (infinite scroll) and render through a virtualized grid.
+ * Server-rendered data seeds the first page, so there is no loading flash and the first
+ * products are in the HTML for search engines.
  */
 export function ProductListing({ initialProducts }: { initialProducts: Product[] }) {
-  const {
-    data: products = initialProducts,
-    isError,
-    refetch,
-  } = useQuery({
-    ...productQueries.list(),
-    initialData: initialProducts,
-  });
+  const queryClient = useQueryClient();
   const { filters, setFilters, resetFilters, isPending } = useProductFilters();
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  // Filtering runs against the deferred value, so clicks paint first (better INP).
+  // Full catalogue (shared cache) for filter counts and the price slider bounds.
+  const { data: catalogue = initialProducts } = useQuery({
+    ...productQueries.list(),
+    initialData: initialProducts,
+  });
+
+  // Querying with the deferred filters keeps clicks responsive (better INP).
   const deferredFilters = useDeferredValue(filters);
-  const results = useMemo(
-    () => applyFilters(products, deferredFilters),
-    [products, deferredFilters],
+  const pagesQuery = useInfiniteQuery(
+    productQueries.pages(deferredFilters, queryClient, initialProducts),
   );
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage, isError, refetch } = pagesQuery;
+
+  const products = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
+  const total = data?.pages[0]?.total ?? 0;
   const isStale = isPending || deferredFilters !== filters;
 
   const onSortChange = useCallback((sort: SortOption) => setFilters({ sort }), [setFilters]);
+  const onLoadMore = useCallback(() => void fetchNextPage(), [fetchNextPage]);
   const closeSheet = useCallback(() => setSheetOpen(false), []);
   const activeCount = countActiveFilters(filters);
 
@@ -62,7 +66,7 @@ export function ProductListing({ initialProducts }: { initialProducts: Product[]
         <div>
           <h1 className="text-3xl font-bold text-ink-900 sm:text-4xl">{headingFor(filters)}</h1>
           <p className="mt-1 text-ink-500" aria-live="polite">
-            {results.length} {results.length === 1 ? 'product' : 'products'}
+            {total} {total === 1 ? 'product' : 'products'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -88,28 +92,40 @@ export function ProductListing({ initialProducts }: { initialProducts: Product[]
         <ActiveFilters filters={filters} onChange={setFilters} onClear={resetFilters} />
       </div>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[250px_1fr]">
+      <div className="mt-6 grid gap-8 lg:grid-cols-[270px_1fr]">
         <aside aria-label="Filters" className="hidden lg:block">
-          <div className="sticky top-36 rounded-[var(--radius-card)] bg-white p-5 ring-1 ring-mist">
-            <FiltersPanel products={products} filters={filters} onChange={setFilters} />
+          {/* Sticks just below the header; moves up when the header hides (see Header.tsx). */}
+          <div className="no-scrollbar sticky-below-header max-h-[calc(100dvh-var(--sticky-top,9rem)-24px)] overflow-y-auto rounded-[var(--radius-card)] bg-white p-5 shadow-lift ring-1 ring-mist">
+            <FiltersPanel
+              products={catalogue}
+              filters={filters}
+              onChange={setFilters}
+              onClear={resetFilters}
+            />
           </div>
         </aside>
 
         <section
           aria-label="Products"
-          className={cn('transition-opacity duration-200', isStale && 'opacity-60')}
+          className={cn('min-w-0 transition-opacity duration-200', isStale && 'opacity-60')}
         >
           {isError && (
             <p className="mb-4 rounded-xl bg-marigold-50 px-4 py-3 text-sm text-ink-700">
-              Showing saved results. Live prices could not be refreshed.{' '}
+              Some products could not be loaded.{' '}
               <button type="button" onClick={() => refetch()} className="font-semibold underline">
-                Retry
+                Try again
               </button>
             </p>
           )}
           <ErrorBoundary title="Products could not be displayed">
-            {results.length > 0 ? (
-              <ProductGrid products={results} />
+            {products.length > 0 ? (
+              <InfiniteProductGrid
+                products={products}
+                total={total}
+                hasNextPage={hasNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                fetchNextPage={onLoadMore}
+              />
             ) : (
               <EmptyState
                 icon={<PackageSearch />}
@@ -129,9 +145,9 @@ export function ProductListing({ initialProducts }: { initialProducts: Product[]
 
       {sheetOpen && (
         <MobileFiltersSheet
-          products={products}
+          products={catalogue}
           filters={filters}
-          resultCount={results.length}
+          resultCount={total}
           onChange={setFilters}
           onClear={resetFilters}
           onClose={closeSheet}

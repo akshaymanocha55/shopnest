@@ -59,13 +59,10 @@ describe('applyFilters', () => {
     expect(result.every((p) => p.rating >= 4.5)).toBe(true);
   });
 
-  it('sorts by price ascending and descending', () => {
-    const asc = applyFilters(products, { ...DEFAULT_FILTERS, sort: 'price-asc' }).map(
-      (p) => p.price,
-    );
-    const desc = applyFilters(products, { ...DEFAULT_FILTERS, sort: 'price-desc' }).map(
-      (p) => p.price,
-    );
+  it('sorts by price ascending and descending (in-stock items; sold-out go last)', () => {
+    const inStock = { ...DEFAULT_FILTERS, inStockOnly: true };
+    const asc = applyFilters(products, { ...inStock, sort: 'price-asc' }).map((p) => p.price);
+    const desc = applyFilters(products, { ...inStock, sort: 'price-desc' }).map((p) => p.price);
     expect(asc).toEqual([...asc].sort((a, b) => a - b));
     expect(desc).toEqual([...desc].sort((a, b) => b - a));
   });

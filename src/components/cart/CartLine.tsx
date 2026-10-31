@@ -63,7 +63,8 @@ export const CartLine = memo(function CartLine({ lineId }: { lineId: string }) {
         />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-start justify-between gap-3">
+        {/* Mobile: price under the title. Desktop: price on the right. */}
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
           <div className="min-w-0">
             <Link
               href={ROUTES.product(item.slug)}
@@ -73,7 +74,7 @@ export const CartLine = memo(function CartLine({ lineId }: { lineId: string }) {
             </Link>
             {item.variantLabel && <p className="mt-1 text-sm text-ink-500">{item.variantLabel}</p>}
           </div>
-          <div className="shrink-0 text-right">
+          <div className="flex shrink-0 flex-wrap items-baseline gap-x-2 sm:block sm:text-right">
             <p className="font-display text-lg leading-7 font-bold text-ink-900 tabular-nums">
               {formatPrice(item.unitPrice * item.quantity)}
             </p>

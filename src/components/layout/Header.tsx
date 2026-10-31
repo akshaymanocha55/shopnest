@@ -2,7 +2,7 @@
 
 import { Menu } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useScrollState } from '@/hooks/useScrollState';
 import { cn } from '@/lib/utils';
 import { HeaderActions } from './HeaderActions';
@@ -17,10 +17,25 @@ export function Header() {
   const { scrolled, hidden } = useScrollState();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Publish where sticky page elements (e.g. the PLP filter sidebar) should sit, so they move
+  // up when the header slides away and back down (with a CSS transition) when it returns.
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => {
+      const height = headerRef.current?.offsetHeight ?? 0;
+      root.style.setProperty('--sticky-top', hidden ? '40px' : `${height + 24}px`);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [hidden]);
 
   return (
     <>
       <header
+        ref={headerRef}
         className={cn(
           'sticky top-0 z-50 bg-white/90 backdrop-blur-xl transition-[transform,box-shadow] duration-300',
           scrolled && 'shadow-[0_1px_0_var(--color-mist),0_8px_24px_-16px_rgb(27_31_59/0.25)]',

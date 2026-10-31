@@ -61,7 +61,13 @@ export default function MobileFiltersSheet({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-5">
-          <FiltersPanel products={products} filters={filters} onChange={onChange} />
+          <FiltersPanel
+            products={products}
+            filters={filters}
+            onChange={onChange}
+            onClear={onClear}
+            hideHeader
+          />
         </div>
         <div className="flex gap-3 border-t border-mist p-4">
           <Button variant="secondary" onClick={onClear} className="flex-1">

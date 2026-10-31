@@ -45,6 +45,10 @@ export function useAddToCart() {
 
   return useCallback(
     (product: Product, variants: SelectedVariants, quantity = 1): boolean => {
+      if (!product.inStock) {
+        toast.error(TOAST.productOutOfStock);
+        return false;
+      }
       const item = buildCartItem(product, variants, quantity);
       const state = store.getState();
 
