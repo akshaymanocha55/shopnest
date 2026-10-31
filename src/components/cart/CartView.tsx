@@ -40,7 +40,7 @@ export function CartView() {
           <WishlistToCart />
         </div>
       ) : (
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="space-y-6">
             <DeliveryEstimate />
             <section

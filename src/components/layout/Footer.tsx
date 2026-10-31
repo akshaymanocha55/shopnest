@@ -12,7 +12,7 @@ const HELP_LINKS = [
 export function Footer() {
   return (
     <footer className="mt-24 bg-ink-800 text-ink-200">
-      <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
+      <div className="container-page grid grid-cols-1 gap-10 py-14 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <div className="max-w-sm">
           <div className="[&_rect]:fill-ink-700! [&_span]:text-white!">
             <Logo />

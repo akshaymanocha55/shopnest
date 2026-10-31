@@ -81,7 +81,10 @@ export function ReviewsSection({ product }: { product: Product }) {
   );
 
   return (
-    <section aria-labelledby="reviews-heading" className="grid gap-10 lg:grid-cols-[320px_1fr]">
+    <section
+      aria-labelledby="reviews-heading"
+      className="grid grid-cols-1 gap-10 lg:grid-cols-[320px_minmax(0,1fr)]"
+    >
       <div>
         <h2 id="reviews-heading" className="text-2xl font-bold text-ink-900">
           Ratings and reviews

@@ -60,7 +60,7 @@ export function OrderDetails({ order, actions }: OrderDetailsProps) {
     <div className="space-y-6">
       <OrderTracking order={order} />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-6">
           <section
             aria-label="Items"

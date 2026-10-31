@@ -11,7 +11,7 @@ export function ProductListingSkeleton() {
         </div>
         <Skeleton className="h-10 w-48 rounded-full" />
       </div>
-      <div className="mt-11 grid gap-8 lg:grid-cols-[250px_1fr]">
+      <div className="mt-11 grid grid-cols-1 gap-8 lg:grid-cols-[250px_minmax(0,1fr)]">
         <Skeleton className="hidden h-[540px] rounded-[var(--radius-card)] lg:block" />
         <ProductGridSkeleton count={8} />
       </div>

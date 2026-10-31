@@ -18,7 +18,7 @@ const TILES = [
 export function Hero({ products }: { products: Product[] }) {
   return (
     <section className="relative overflow-hidden bg-white">
-      <div className="container-page grid items-center gap-10 py-12 md:grid-cols-[1.05fr_1fr] md:py-20">
+      <div className="container-page grid grid-cols-1 items-center gap-10 py-12 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] md:py-20">
         <div>
           <h1 className="animate-rise text-[clamp(2.6rem,6vw,4.75rem)] leading-[0.98] font-extrabold text-ink-900">
             Everyday finds, fairly priced.

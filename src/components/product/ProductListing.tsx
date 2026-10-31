@@ -92,7 +92,7 @@ export function ProductListing({ initialProducts }: { initialProducts: Product[]
         <ActiveFilters filters={filters} onChange={setFilters} onClear={resetFilters} />
       </div>
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[270px_1fr]">
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[270px_minmax(0,1fr)]">
         <aside aria-label="Filters" className="hidden lg:block">
           {/* Sticks just below the header; moves up when the header hides (see Header.tsx). */}
           <div className="no-scrollbar sticky-below-header max-h-[calc(100dvh-var(--sticky-top,9rem)-24px)] overflow-y-auto rounded-[var(--radius-card)] bg-white p-5 shadow-lift ring-1 ring-mist">

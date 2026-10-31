@@ -2,7 +2,11 @@ import { Skeleton } from '../ui/Skeleton';
 
 export function CartSkeleton() {
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_380px]" aria-busy aria-label="Loading">
+    <div
+      className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_380px]"
+      aria-busy
+      aria-label="Loading"
+    >
       <div className="space-y-5 rounded-[var(--radius-card)] bg-white p-6 ring-1 ring-mist">
         {[0, 1, 2].map((i) => (
           <div key={i} className="flex gap-5">

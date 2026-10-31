@@ -10,6 +10,7 @@ import { formatPrice } from '@/lib/format';
 import { discountPercent, getUnitPrice } from '@/lib/pricing';
 import type { SelectedVariants } from '@/types/cart';
 import type { Product } from '@/types/product';
+import { StickyActionBar } from '../../common/StickyActionBar';
 import { PincodeCheck } from '../../delivery/PincodeCheck';
 import { Button } from '../../ui/Button';
 import { Price } from '../../ui/Price';
@@ -97,7 +98,7 @@ export function PurchasePanel({ product }: { product: Product }) {
       )}
 
       {/* Actions. On mobile they stick to the bottom of the screen. */}
-      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-mist bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
+      <StickyActionBar breakpoint="md" className="flex items-center gap-3">
         {product.inStock ? (
           <>
             <AddToCartButton
@@ -117,7 +118,7 @@ export function PurchasePanel({ product }: { product: Product }) {
           <NotifyMeButton size="lg" className="flex-1" />
         )}
         <WishlistButton product={product} variant="outline" className="shrink-0" />
-      </div>
+      </StickyActionBar>
 
       {/* Delivery */}
       <div className="divide-y divide-mist rounded-[var(--radius-card)] bg-white ring-1 ring-mist">

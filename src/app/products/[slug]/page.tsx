@@ -60,7 +60,7 @@ async function ProductDetail({ slug }: { slug: string }) {
     <div className="container-page pt-6 pb-28 md:pb-10">
       <Breadcrumbs items={crumbs} />
 
-      <div className="mt-5 grid items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
+      <div className="mt-5 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
         {/* The gallery stays in view while the buying options scroll (desktop). */}
         <div className="lg:sticky-below-header">
           <ProductGallery image={product.image} title={product.title} inStock={product.inStock} />
@@ -87,7 +87,7 @@ async function ProductDetail({ slug }: { slug: string }) {
 
       <section
         aria-labelledby="details-heading"
-        className="mt-14 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-14"
+        className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-14"
       >
         <div>
           <h2 id="details-heading" className="text-2xl font-bold text-ink-900">

@@ -22,7 +22,7 @@ export default function MegaMenuPanel({ category, onNavigate }: MegaMenuPanelPro
   const featured = products?.find((p) => p.id === section.featuredProductId);
 
   return (
-    <div className="container-page grid animate-fade-in gap-8 py-8 md:grid-cols-[1fr_1fr_1fr_1.3fr]">
+    <div className="container-page grid animate-fade-in grid-cols-1 gap-8 py-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)]">
       {section.columns.map((column) => (
         <div key={column.heading}>
           <p className="mb-3 text-sm font-semibold text-ink-400">{column.heading}</p>
